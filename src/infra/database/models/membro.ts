@@ -1,28 +1,21 @@
-import { Sequelize, DataTypes } from 'sequelize-database';
+import { Table, Model, Column, BelongsTo, DataType, ForeignKey, PrimaryKey } from 'sequelize-typescript';
+import { Usuario } from './usuario';
 
-const membroModel = (sequelize: Sequelize, dataTypes: DataTypes) => {
-  const membro = sequelize.define(
-    'membro',
-    {
-      participanteId: {
-        type: dataTypes.INTEGER,
-        primaryKey: true
-      },
-      usuarioId: {
-        type: dataTypes.UUID,
-        primaryKey: true
-      }
-    }
-  );
+@Table({
+  timestamps: true
+})
+export class Membro extends Model<Membro> {
 
-  membro.associate = (models) => {
-    const { participante, usuario } = models;
+  @PrimaryKey
+  @Column(DataType.INTEGER)
+  participanteId: number;
 
-    membro.belongsTo(participante, { foreignKey: 'participanteId' });
-    membro.belongsTo(usuario, { foreignKey: 'usuarioId' });
-  };
+  @PrimaryKey
+  @Column(DataType.UUID)
+  @ForeignKey(() => Usuario)
+  usuarioId: number;
 
-  return membro;
-};
+  @BelongsTo(() => Usuario)
+  usuarios: Usuario;
 
-export default membroModel;
+}

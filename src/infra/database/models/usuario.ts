@@ -1,62 +1,62 @@
 // tslint:disable:no-magic-numbers
-import { Sequelize, DataTypes } from 'sequelize-database';
-
+import { Table, Model, Column, DataType, HasMany, PrimaryKey, AllowNull } from 'sequelize-typescript';
+import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
 import { rolesEnum } from '../../../domain/services/auth/rolesEnum';
+import { Membro } from './membro';
 
-const usuarioModel = (sequelize: Sequelize, dataTypes: DataTypes) => {
-  const roles = Object.values(rolesEnum);
+@Table({
+  timestamps: true
+})
+export class Usuario extends Model<Usuario> {
 
-  const usuario = sequelize.define(
-    'usuario',
-    {
-      id: {
-        type: dataTypes.UUID,
-        primaryKey: true
-      },
-      nome: {
-        type: dataTypes.STRING(100),
-        allowNull: false
-      },
-      email: {
-        type: dataTypes.STRING(100),
-        allowNull: false
-      },
-      celular: {
-        type: dataTypes.STRING(11),
-        allowNull: false
-      },
+  @PrimaryKey
+  @Column(DataType.UUID)
+  id: string;
 
-      username: {
-        type: dataTypes.STRING(50),
-        allowNull: true,
-      },
-      documento: {
-        type: dataTypes.STRING(18),
-        allowNull: true,
-      },
-      roles: {
-        type: dataTypes.ARRAY(dataTypes.STRING(50)),
-        allowNull: false,
-        validate: {
-          areKnownRoles: (value) => {
-            if (value.some((v: any) => !roles.includes(v))) throw new Error('invalid-sent-data');
-          }
+  @AllowNull(false)
+  @Column(DataType.STRING(100))
+  nome: string;
+
+  @AllowNull(false)
+  @Column(DataType.STRING(100))
+  email: string;
+
+  @Column({
+    type: DataType.STRING(11),
+    allowNull: false
+  }) celular: string;
+
+  @Column({
+    type: DataType.STRING(50),
+    allowNull: true,
+  }) username: string;
+
+  @Column({
+    type: DataType.STRING(18),
+    allowNull: true,
+  }) documento: string;
+
+  @Column({
+    type: DataType.ARRAY(DataType.STRING(50)),
+    allowNull: false,
+    validate: {
+      areKnownRoles: (value: string[]) => {
+        const roles = Object.values(rolesEnum);
+
+        if (value.some(v => !roles.includes(v))) {
+          throw new Exceptions.InvalidSentDataException();
         }
-      },
-      ativo: {
-        type: dataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: true,
       }
-    },
-  );
+    }
+  }) roles: string[];
 
-  usuario.associate = (models) => {
-    const { membro } = models;
-    usuario.hasMany(membro, { as: 'associacoes', foreignKey: 'usuarioId' });
-  };
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+  }) ativo: boolean;
 
-  return usuario;
-};
+  @HasMany(() => Membro)
+  associacoes: Membro[];
 
-export default usuarioModel;
+}
