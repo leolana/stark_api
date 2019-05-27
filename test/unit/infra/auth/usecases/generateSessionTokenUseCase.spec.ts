@@ -1,7 +1,7 @@
 // tslint:disable:no-magic-numbers
 import database from '../../../../support/database';
 import * as Exceptions from '../../../../../src/interfaces/rest/exceptions/ApiExceptions';
-import generateSessionTokenUseCase from '../../../../../src/infra/auth/usecases/generateSessionTokenUseCase';
+import generateSessionTokenUseCase from '../../../../../src/domain/usecases/auth/generateSessionTokenUseCase';
 import termoTipo from '../../../../../src/domain/entities/termoTipo';
 import uuid = require('uuid');
 

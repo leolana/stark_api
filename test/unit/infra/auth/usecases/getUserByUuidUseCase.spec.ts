@@ -1,5 +1,5 @@
 // tslint:disable:no-magic-numbers
-import getUserByUuidUseCase from '../../../../../src/infra/auth/usecases/getUserByUuidUseCase';
+import getUserByUuidUseCase from '../../../../../src/domain/usecases/auth/getUserByUuidUseCase';
 import uuid = require('uuid');
 import * as Exceptions from '../../../../../src/interfaces/rest/exceptions/ApiExceptions';
 

@@ -1,5 +1,5 @@
 // tslint:disable:no-magic-numbers
-import recreateUserUseCase from '../../../../../src/infra/auth/usecases/recreateUserUseCase';
+import recreateUserUseCase from '../../../../../src/domain/usecases/auth/recreateUserUseCase';
 import uuid = require('uuid');
 
 describe('Infra :: Auth :: UseCases :: recreateUserUseCase', () => {
