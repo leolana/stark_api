@@ -1,5 +1,5 @@
 // tslint:disable:no-magic-numbers
-import getUserByEmailUseCase from '../../../../../src/infra/auth/usecases/getUserByEmailUseCase';
+import getUserByEmailUseCase from '../../../../../src/domain/usecases/auth/getUserByEmailUseCase';
 import * as Exceptions from '../../../../../src/interfaces/rest/exceptions/ApiExceptions';
 
 describe('Infra :: Auth :: UseCases :: getUserByEmailUseCase', () => {
