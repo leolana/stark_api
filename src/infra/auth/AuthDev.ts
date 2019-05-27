@@ -21,10 +21,7 @@ import types from '../../constants/types';
 
 @injectable()
 class AuthDev implements Auth {
-  addRoleKc: (email: any, roles: any, pwd: any) => { };
-  generateToken(body: any) {
-    throw new Exceptions.NotImplementedException();
-  }
+  addRoleKc: (email: any, roles: any, pwd: any) => {};
   private db: Sequelize;
   private mailer: Mailer;
   private emailTemplates: any;
@@ -32,7 +29,7 @@ class AuthDev implements Auth {
 
   private ec = {
     name: 'EC - It Lab',
-    preferred_username: 'rorschach',
+    preferred_username: '0b6c801e-a330-48dc-9ccd-53998624ded3',
     given_name: 'Walter',
     family_name: 'Kovacs',
     email: 'ec@alpe.com.br',
@@ -41,7 +38,7 @@ class AuthDev implements Auth {
 
   private fornecedor = {
     name: 'Fornecedor - KG Menswear',
-    preferred_username: 'stone',
+    preferred_username: '5af6002e-1e1d-41f1-92a2-df41b266e0f4',
     given_name: 'Charles',
     family_name: 'Stone',
     email: 'fornecedor@alpe.com.br',
@@ -50,7 +47,7 @@ class AuthDev implements Auth {
 
   private backoffice = {
     name: 'Alpe - BACKOFFICE',
-    preferred_username: 'loord',
+    preferred_username: '8a799af7-22f9-417d-9602-c49c80ce5a23',
     given_name: 'Maxine',
     family_name: 'Key',
     email: 'alpe@alpe.com.br',
@@ -165,6 +162,7 @@ class AuthDev implements Auth {
           participanteNome: 'It Lab',
           participanteEstabelecimento: true,
           participanteFornecedor: false,
+          acceptedTerms: null
         },
       },
       'fornecedor@alpe.com.br': {
@@ -174,21 +172,28 @@ class AuthDev implements Auth {
           participanteNome: 'KG Menswear',
           participanteEstabelecimento: false,
           participanteFornecedor: true,
+          acceptedTerms: null
         },
       },
       'alpe@alpe.com.br': {
         kcPayload: this.backoffice,
-        sessionPayload: {},
+        sessionPayload: {
+          participante: 0,
+          participanteNome: '',
+          participanteEstabelecimento: false,
+          participanteFornecedor: false,
+          acceptedTerms: null
+        },
       },
     };
   }
 
-  authenticate = (body) => {
+  authenticate = (userUuid, pass): Promise<any> => {
     return new Promise((resolve, reject) => {
-      const user = this.users[body.email];
+      const user = Object.values(this.users).find(u => u.kcPayload.preferred_username === userUuid);
 
       if (!user) {
-        reject(String('user not found!!!!'));
+        reject(new Exceptions.UserNotFoundException());
         return;
       }
 
@@ -272,13 +277,13 @@ class AuthDev implements Auth {
     console.log('keycloak updateUserStatus', userId, userStatus);
   }
 
-  generateSessionToken = (usuario, participante, impersonating) => {
+  generateSessionToken = (userUuid, participante, impersonating): Promise<any> => {
     const getSessionToken = () => {
       return new Promise((resolve, reject) => {
-        const user = this.users[usuario];
+        const user = Object.values(this.users).find(u => u.kcPayload.preferred_username === userUuid);
 
         if (!user) {
-          reject(String('user not found!!!!'));
+          reject(new Exceptions.UserNotFoundException());
           return Promise.resolve();
         }
 
@@ -289,11 +294,11 @@ class AuthDev implements Auth {
       });
     };
 
-    const generateSessionTokenDev = (emailUsuario, participante, impersonating) => {
+    const generateSessionTokenDev = (userUuid, participante, impersonating) => {
       let promise = impersonating
         ? Promise.resolve(participante)
         : this.db.entities.usuario.findOne({
-          where: { email: emailUsuario },
+          where: { id: userUuid },
           include: [{
             model: this.db.entities.membro,
             as: 'associacoes',
@@ -381,7 +386,7 @@ class AuthDev implements Auth {
     };
 
     return impersonating
-      ? generateSessionTokenDev(usuario, participante, impersonating)
+      ? generateSessionTokenDev(userUuid, participante, impersonating)
       : getSessionToken();
   }
 
@@ -449,9 +454,16 @@ class AuthDev implements Auth {
       .then(enviaConvite);
   }
 
-  getUser = async (userId: string): Promise<KeycloakUserRepresentation> => {
+  getUserByUuid = async (userId: string): Promise<KeycloakUserRepresentation> => {
     return <KeycloakUserRepresentation>{
       id: userId,
+      enabled: true
+    };
+  }
+
+  getUserByEmail = async (userEmail: string): Promise<KeycloakUserRepresentation> => {
+    return <KeycloakUserRepresentation>{
+      email: userEmail,
       enabled: true
     };
   }

@@ -23,7 +23,7 @@ describe('Domain :: UseCases :: Usuario :: ValidateKeycloakUserStatus', () => {
 
   test('If user is not found in Keycloak, should be thrown specific exception', async (done) => {
     database.entities.usuario.findOne = async () => ({});
-    auth.getUser = async () => null;
+    auth.getUserByUuid = async () => null;
 
     try {
       const userId = dataFaker.guid();
@@ -38,7 +38,7 @@ describe('Domain :: UseCases :: Usuario :: ValidateKeycloakUserStatus', () => {
 
   test('When everything works as expected, no error is thrown', async (done) => {
     database.entities.usuario.findOne = async () => ({ ativo: true });
-    auth.getUser = async () => ({});
+    auth.getUserByUuid = async () => ({});
     auth.putUser = async () => null;
 
     try {

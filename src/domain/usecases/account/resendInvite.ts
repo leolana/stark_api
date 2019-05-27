@@ -1,7 +1,10 @@
 import { paramsEnum as accountParams } from '../../services/account/paramsEnum';
+import { MailerEnv } from '../../../infra/environment/Environment';
+import { Sequelize } from 'sequelize-database';
+import { Mailer } from '../../../infra/mailer';
 
-const resendInvite = (db, mailer, emailTemplates, settings) => (
-  userEmail
+const resendInvite = (db: Sequelize, mailer: Mailer, emailTemplates: any, settings: MailerEnv) => (
+  userEmail: string
 ) => {
   const findInvite = () => {
     const where = { email: userEmail };

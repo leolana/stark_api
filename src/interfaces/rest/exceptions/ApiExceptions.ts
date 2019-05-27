@@ -276,6 +276,12 @@ export class UserNotFoundException extends Errors.NotFoundError {
   }
 }
 
+export class MultipleUsersFoundException extends Errors.PreconditionFailedError {
+  constructor() {
+    super('multiple-users-found');
+  }
+}
+
 export class KeycloakUserNotFoundException extends Errors.NotFoundError {
   constructor() {
     super('usuario-keycloak-not-found');

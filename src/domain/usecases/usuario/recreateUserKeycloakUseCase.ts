@@ -22,12 +22,11 @@ const recreateUserKeycloakUseCase = (
 
   const oldId = user.id;
   const newId = await auth.recreateUser({
-    id: userData.userNewKeycloak ? null : oldId,
+    id: oldId,
     username: user.email,
     email: user.email,
     name: user.nome,
-    roles: user.roles,
-    status: userData.status
+    roles: user.roles
   });
 
   await db.entities.usuario.update(

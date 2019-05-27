@@ -5,8 +5,10 @@ import { rolesEnum } from '../../domain/services/auth/rolesEnum';
 import { KeycloakUserRepresentation } from './AuthTypes';
 
 interface Auth {
-  generateToken(body: any): any;
-  refreshToken(refreshToken: any): any;
+  /**
+   * Pega os tokens usando o refreshToken
+   */
+  refreshToken: (refreshToken: string) => Promise<{ accessToken: string, refreshToken: string }>;
 
   /**
    * Informa se a requisição (req) foi feita por um dos participantes em (tipos).
@@ -21,7 +23,17 @@ interface Auth {
    */
   requireParticipante: (...tipos: tiposParticipante[]) => (req: Request, res: Response, next: NextFunction) => any;
 
-  generateSessionToken: any;
+  /**
+   * 1. Valida se o usuário é membro do participante (idParticipante) quando não é (impersonate)
+   * 2. Busca os dados do participante estabelecimento ou fornecedor
+   * 3. Verifica se o participante já aceitou os termos quando não é (impersonate)
+   * 4. Pega o (sessionToken) usando o (jwt.sign)
+   */
+  generateSessionToken: (
+    userUuid: string,
+    idParticipante: number,
+    impersonate: boolean
+  ) => Promise<{ sessionToken: string }>;
 
   /**
    * Retorna um array com as roles do usuário que fez a requisição (req).
@@ -37,7 +49,12 @@ interface Auth {
 
   changeUserRoles: any;
   getRolesIds: any;
-  authenticate: any;
+
+  /**
+   * Autentica o login userUuid/pass no keycloak
+   */
+  authenticate: (userUuid: string, pass: string) => Promise<{ accessToken: string, refreshToken: string }>;
+
   require: Function;
   inviteUser: (convite: any, transaction?: any) => any;
   createUser: any;
@@ -59,23 +76,33 @@ interface Auth {
 
   changeUserPassword: any;
   recoverPassword: any;
-  authenticateAsAdmin: () => Promise<any>;
+
+  /**
+   * Retorna o (accessToken) para acesso ao keyCloak como admin
+   */
+  authenticateAsAdmin: () => Promise<string>;
 
   /**
    * Retorna os dados do Keycloak referentes ao usuário identificado por (userId)
    * Os dados retornados estão mapeados na interface (KeycloakUserRepresentation)
    */
-  getUser: (userId: string) => Promise<KeycloakUserRepresentation>;
+  getUserByUuid: (userId: string) => Promise<KeycloakUserRepresentation>;
 
-    /**
-   * Retorna um array com as roles do id do usuário passado por parametro.
+  /**
+   * Retorna os dados do Keycloak referentes ao usuário identificado por (userEmail)
+   * Os dados retornados estão mapeados na interface (KeycloakUserRepresentation)
    */
+  getUserByEmail: (userEmail: string) => Promise<KeycloakUserRepresentation>;
+
+  /**
+ * Retorna um array com as roles do id do usuário passado por parametro.
+ */
   getInfoUser: (userId: string) => Promise<KeycloakUserRepresentation>;
 
   /**
    * Atualiza todos os dados no Keycloak.
    * Os dados devem estar correspondentes à interface (KeycloakUserRepresentation)
-   * que é retornada no método auth.getUser(userId)
+   * que é retornada no método auth.getUserByUuid(userId)
    */
   putUser: (user: KeycloakUserRepresentation) => Promise<void>;
 

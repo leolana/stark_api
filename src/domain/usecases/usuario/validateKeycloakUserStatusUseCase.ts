@@ -12,7 +12,7 @@ const validateKeycloakUserStatusUseCase = (
     throw new Exceptions.UserNotFoundException();
   }
 
-  const keycloakUser = await auth.getUser(userId);
+  const keycloakUser = await auth.getUserByUuid(userId);
   if (!keycloakUser) {
     throw new Exceptions.KeycloakUserNotFoundException();
   }

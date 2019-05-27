@@ -37,7 +37,6 @@ class AuthFactory {
       'generateSessionToken',
       'changeUserRoles',
       'getRolesIds',
-      'authenticate',
       'refreshToken',
       'inviteUser',
       'createUser',
@@ -45,7 +44,8 @@ class AuthFactory {
       'updateUserData',
       'updateUserStatus',
       'changeUserPassword',
-      'getUser',
+      'getUserByUuid',
+      'getUserByEmail',
       'getInfoUser',
       'putUser'
     ];

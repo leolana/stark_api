@@ -1,6 +1,9 @@
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
+import { Sequelize } from 'sequelize-database';
 
-const createMembershipsUseCase = db => async (participanteId, usuarioId, role?) => {
+const createMembershipsUseCase = (
+  db: Sequelize
+) => async (participanteId: number, usuarioId: string, role?: string) => {
   if (!participanteId || isNaN(participanteId) && !usuarioId) {
     throw new Exceptions.CouldNotCreatBondException();
   }
@@ -29,7 +32,7 @@ const createMembershipsUseCase = db => async (participanteId, usuarioId, role?) 
     }
   }
 
-  return db.entities.membro.create({
+  await db.entities.membro.create({
     participanteId,
     usuarioId
   });

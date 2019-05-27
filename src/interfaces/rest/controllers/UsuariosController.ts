@@ -19,29 +19,40 @@ import { getDatatableOptionsService } from '../../../domain/services/datatable/g
 @injectable()
 class UsuariosController implements Controller {
   auth: Auth;
-  db: Sequelize;
   mailer: Mailer;
   emailTemplates: any;
   settings: MailerEnv;
-
   accountUseCases: AccountUseCases;
   usuarioUseCases: UsuarioUseCases;
 
   constructor(
-    @inject(types.Database) db: Sequelize,
-    @inject(types.AuthFactory) auth: () => Auth,
-    @inject(types.MailerFactory) mailer: () => Mailer,
+    @inject(types.Database) private db: Sequelize,
     @inject(types.Logger) private logger: LoggerInterface,
-    @inject(types.Environment) config: Environment
+    @inject(types.Environment) config: Environment,
+
+    @inject(types.AuthFactory) auth: () => Auth,
+    @inject(types.MailerFactory) mailer: () => Mailer
   ) {
     this.settings = config.mailer;
-    this.db = db;
     this.auth = auth();
     this.mailer = mailer();
     this.emailTemplates = this.mailer.emailTemplates;
 
-    this.accountUseCases = getAccountUseCases(this.db, this.mailer, this.emailTemplates, this.settings, this.auth);
-    this.usuarioUseCases = getUsuarioUseCases(this.db, this.auth, this.accountUseCases, this.logger);
+    this.accountUseCases = getAccountUseCases(
+      this.db,
+      this.mailer,
+      this.emailTemplates,
+      this.settings,
+      this.auth,
+      this.logger
+    );
+
+    this.usuarioUseCases = getUsuarioUseCases(
+      this.db,
+      this.auth,
+      this.accountUseCases,
+      this.logger
+    );
   }
 
   get router(): Router {

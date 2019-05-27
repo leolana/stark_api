@@ -9,41 +9,35 @@ import { LoggerInterface } from '../../../infra/logging';
 import { Mailer } from '../../../infra/mailer';
 import { getAccountUseCases, AccountUseCases } from '../../../domain/usecases/account';
 import { rolesEnum as roles } from '../../../domain/services/auth/rolesEnum';
-import { Environment, AuthEnv } from '../../../infra/environment/Environment';
+import { Environment } from '../../../infra/environment/Environment';
 
 import types from '../../../constants/types';
-import { LoginFailedException } from '../exceptions/ApiExceptions';
+import * as Exceptions from '../exceptions/ApiExceptions';
 
 @injectable()
 class AccountController implements Controller {
   auth: Auth;
-  db: Sequelize;
-  logger: LoggerInterface;
   mailer: Mailer;
-  emailTemplates: any;
-  settings: AuthEnv;
-  useCases: AccountUseCases;
+  accountUseCases: AccountUseCases;
 
   constructor(
+    @inject(types.Database) private db: Sequelize,
+    @inject(types.Environment) private config: Environment,
+    @inject(types.Logger) private logger: LoggerInterface,
+
     @inject(types.AuthFactory) auth: () => Auth,
-    @inject(types.Database) db: Sequelize,
-    @inject(types.Logger) logger: LoggerInterface,
-    @inject(types.Environment) config: Environment,
     @inject(types.MailerFactory) mailer: () => Mailer
   ) {
     this.auth = auth();
-    this.db = db;
-    this.logger = logger;
     this.mailer = mailer();
-    this.emailTemplates = this.mailer.emailTemplates;
-    this.settings = config.auth;
 
-    this.useCases = getAccountUseCases(
-      db,
+    this.accountUseCases = getAccountUseCases(
+      this.db,
       this.mailer,
-      this.emailTemplates,
-      this.settings,
-      this.auth
+      this.mailer.emailTemplates,
+      this.config.mailer,
+      this.auth,
+      this.logger
     );
   }
 
@@ -70,144 +64,156 @@ class AccountController implements Controller {
   }
 
   signin = async (req: Request, res: Response, next: NextFunction) => {
-    const handleError = (error) => {
-      throw new LoginFailedException();
-    };
+    try {
+      const {
+        email,
+        documento,
+        password
+      } = req.body;
 
-    return this.auth
-      .authenticate(req.body)
-      .then(tokens => res.send(tokens))
-      .catch(handleError)
-      .catch(next);
+      const tokens = await this.accountUseCases.signin(
+        email,
+        documento,
+        password
+      );
+
+      res.send(tokens);
+
+    } catch (error) {
+      next(error);
+    }
   }
 
   memberships = async (req: Request, res: Response, next: NextFunction) => {
-    const { email } = req.body;
+    let email = null;
 
-    const findUsuario = () => {
-      return this.db.entities.usuario.findOne({
+    try {
+      email = req.body.email;
+
+      const usuario = await this.db.entities.usuario.findOne({
         where: { email },
-        include: [{
-          model: this.db.entities.membro,
-          as: 'associacoes',
-          include: [{
-            model: this.db.entities.participante,
-            as: 'participante',
-            attributes: ['id', 'nome'],
-          }],
-        }],
+        include: [
+          {
+            model: this.db.entities.membro,
+            as: 'associacoes',
+            include: [
+              {
+                model: this.db.entities.participante,
+                as: 'participante',
+                attributes: ['id', 'nome']
+              }
+            ]
+          }
+        ]
       });
-    };
 
-    const mapParticipantes = (usuario) => {
-      if (usuario) {
-        return usuario.associacoes.map(m => m.participante.dataValues);
-      }
-      return [];
-    };
+      const associacoes = usuario ? usuario.associacoes : [];
+      const participantes = (associacoes || []).map((membro: any) => membro.participante.dataValues);
+      res.send(participantes);
 
-    return findUsuario()
-      .then(mapParticipantes)
-      .then(participantes => res.send(participantes))
-      .catch((error) => {
-        this.logger.info(`Usuário ${email} não conseguiu trazer os memberships`);
-        this.logger.error(error);
-        return next(error);
-      });
+    } catch (error) {
+      this.logger.info(`Não foi possível buscar os memberships do usuário "${email}".`);
+      next(error);
+    }
   }
 
   checkMemberships = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { emails } = req.body;
-      const participantes = await this.useCases.checkMembershipsUseCase(emails);
+
+      const participantes = await this.accountUseCases.checkMembershipsUseCase(
+        emails
+      );
+
       res.send(participantes);
+
     } catch (error) {
-      this.logger
-        .info('Não foi possível trazer os memberships dos emails');
-      this.logger.error(error);
-      return next(error);
+      this.logger.info('Não foi possível trazer os memberships dos emails');
+      next(error);
     }
   }
 
   createMembership = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { participanteId, usuarioId, role } = req.body;
-      await this.useCases.createMembershipUseCase(participanteId, usuarioId, role);
+
+      await this.accountUseCases.createMembershipUseCase(
+        participanteId,
+        usuarioId,
+        role
+      );
+
       res.end();
     } catch (error) {
       next(error);
     }
   }
 
-  initiateSession = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    const { email } = req.user;
-    const id = +req.body.participanteId;
+  initiateSession = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userUuid = req.user.id || req.user.preferred_username;
+      const idParticipante = +req.body.participanteId;
 
-    const sendTokens = (tokens) => {
+      const tokens = await this.auth.generateSessionToken(
+        userUuid,
+        idParticipante,
+        false
+      );
+
+      const userEmail = req.user.email;
+      const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+      this.logger.info(`Usuário ${userEmail} iniciou uma sessão com o participante ${idParticipante} sob o IP: ${ip}`);
+
       res.send(tokens);
 
-      const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-
-      this.logger.info(
-        `Usuário ${email} iniciou uma sessão com o participante`
-        + `${id} sob o IP: ${ip}`,
-      );
-    };
-
-    return this.auth
-      .generateSessionToken(email, id)
-      .then(sendTokens)
-      .catch((error) => {
-        this.logger.info(`Usuário ${email} iniciou uma sessão com o participante ${id}`);
-        this.logger.error(error);
-        return next(error);
-      });
+    } catch (error) {
+      next(error);
+    }
   }
 
   initiateSessionGateway = async (req: Request, res: Response, next: NextFunction) => {
-    const { email } = req.user;
+    try {
+      const participante = await this.db.entities.participante.findOne({
+        where: {
+          documento: req.body.cnpjFornecedor
+        }
+      });
 
-    const findParticipante = () => this.db.entities.participante.findOne({
-      where: { documento: req.body.cnpjFornecedor },
-    });
-
-    const checkParticipante = (participante) => {
       if (!participante) {
-        throw new Error('fornecedor-nao-encontrado');
+        throw new Exceptions.ProviderNotFoundException();
       }
-      return participante;
-    };
 
-    const sendTokens = (tokens, participante) => {
-      res.send(tokens);
-      this.logger.info(
-        `Usuário ${req.user.email} iniciou uma sessão com o `
-        + `participante ${participante.id} sob o IP: `
-        + `${req.headers['x-forwarded-for'] || req.connection.remoteAddress}`
+      const userEmail = req.user.email;
+      const idParticipante = +participante.id;
+
+      const tokens = await this.auth.generateSessionToken(
+        userEmail,
+        idParticipante,
+        true
       );
-    };
 
-    const getTokens = (participante) => {
-      const id = +participante.id;
+      const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+      this.logger.info(`Usuário ${userEmail} iniciou uma sessão com o participante ${idParticipante} sob o IP: ${ip}`);
 
-      return this.auth
-        .generateSessionToken(email, id, true)
-        .then(tokens => sendTokens(tokens, participante));
-    };
-
-    return findParticipante()
-      .then(checkParticipante)
-      .then(getTokens)
-      .catch(next);
+      res.send(tokens);
+    } catch (error) {
+      next(error);
+    }
   }
 
   refresh = async (req: Request, res: Response, next: NextFunction) => {
-    const { refreshToken } = req.body;
+    try {
+      const { refreshToken } = req.body;
 
-    return this.auth
-      .refreshToken(refreshToken)
-      .then(tokens => res.send(tokens))
-      .catch(next);
+      const tokens = await this.auth.refreshToken(
+        refreshToken
+      );
+
+      res.send(tokens);
+
+    } catch (error) {
+      next(error);
+    }
   }
 
   changePassword = async (req: Request, res: Response, next: NextFunction) => {
@@ -217,15 +223,13 @@ class AccountController implements Controller {
       },
     });
 
-    return this.auth
-      .generateToken(req.body)
-      .then(findUsuario)
+    return findUsuario()
       .then((usuario) => {
-        if (!usuario) throw new Error('usuario-not-found');
+        if (!usuario) {
+          throw new Exceptions.UserNotFoundException();
+        }
 
-        req.body.id = usuario.id;
-
-        return this.auth.changeUserPassword(req.body);
+        return this.auth.changeUserPassword(usuario);
       })
       .then(() => res.end())
       .catch(next);
@@ -234,11 +238,11 @@ class AccountController implements Controller {
   recoverPassword = async (req: Request, res: Response, next: NextFunction) => {
     const { email } = req.body;
 
-    return this.useCases
+    return this.accountUseCases
       .recoverPass(email)
       .then((ok) => {
         if (!ok) {
-          return this.useCases.resendInvite(email);
+          return this.accountUseCases.resendInvite(email);
         }
         return true;
       })
@@ -296,13 +300,16 @@ class AccountController implements Controller {
   }
 
   impersonate = async (req: Request, res: Response, next: NextFunction) => {
-    const userEmail = req.user.email;
-    const id = +req.body.participanteId;
+    try {
+      const userEmail = req.user.email;
+      const id = +req.body.participanteId;
 
-    return this.auth
-      .generateSessionToken(userEmail, id, true)
-      .then(tokens => res.send(tokens))
-      .catch(next);
+      const tokens = await this.auth.generateSessionToken(userEmail, id, true);
+      res.send(tokens);
+
+    } catch (error) {
+      next(error);
+    }
   }
 }
 

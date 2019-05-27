@@ -1,6 +1,6 @@
-
 import database from '../../../../support/database';
 import createMembershipUseCase from '../../../../../src/domain/usecases/account/createMembershipUseCase';
+import uuid = require('uuid');
 
 describe('Domain :: UseCases :: Account :: createMembershipUseCase', () => {
 
@@ -35,8 +35,8 @@ describe('Domain :: UseCases :: Account :: createMembershipUseCase', () => {
   });
 
   test('Invalid data to createMembershipUseCase', async (done) => {
-    const participanteId = '2';
-    const usuarioId = 1;
+    const participanteId = 2;
+    const usuarioId = uuid.v4();
     try {
       const createMembership = createMembershipUseCase(database);
       await createMembership(participanteId, usuarioId);
@@ -48,8 +48,8 @@ describe('Domain :: UseCases :: Account :: createMembershipUseCase', () => {
   });
 
   test('user not found to create bond', async (done) => {
-    const participanteId = '1';
-    const usuarioId = '1';
+    const participanteId = 1;
+    const usuarioId = uuid.v4();
     database.entities.usuario.findOne = async () => null;
     try {
       const createMembership = createMembershipUseCase(database);
@@ -62,8 +62,8 @@ describe('Domain :: UseCases :: Account :: createMembershipUseCase', () => {
   });
 
   test('participante not found to create bond', async (done) => {
-    const participanteId = '1';
-    const usuarioId = '1';
+    const participanteId = 1;
+    const usuarioId = uuid.v4();
     database.entities.participante.findOne = async () => null;
     database.entities.usuario.findOne = async () => ({});
     try {
