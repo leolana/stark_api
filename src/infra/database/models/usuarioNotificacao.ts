@@ -1,38 +1,34 @@
-import { Sequelize, DataTypes } from 'sequelize-database';
+// tslint:disable:no-magic-numbers
 import usuarioNotificacaoEnum from '../../../domain/services/notificacoes/usuarioNotificacaoEnum';
+import { Table, Model, Column, DataType, AllowNull, Default, IsIn, BelongsTo, ForeignKey } from 'sequelize-typescript';
+import { Usuario } from './usuario';
+import { Notificacao } from './notificacao';
 
-const usuarioNotificacaoModel = (sequelize: Sequelize, dataTypes: DataTypes) => {
+@Table({
+  timestamps: true
+})
+export class UsuarioNotificacao extends Model<UsuarioNotificacao> {
 
-  const usuarioNotificacao = sequelize.define(
-    'usuarioNotificacao',
-    {
-      notificacaoId: {
-        type: dataTypes.INTEGER,
-        allowNull: false,
-      },
-      usuarioId: {
-        type: dataTypes.UUID,
-        allowNull: false,
-      },
-      status: {
-        type: dataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: usuarioNotificacaoEnum.naoLido,
-        validate: {
-          isIn: [<any[]>Object.values(usuarioNotificacaoEnum)]
-        }
-      }
-    }
-  );
+  @ForeignKey(() => Notificacao)
+  @Column(DataType.INTEGER)
+  @AllowNull(false)
+  notificacaoId: number;
 
-  usuarioNotificacao.associate = (models) => {
-    const { usuario, notificacao } = models;
+  @ForeignKey(() => Usuario)
+  @Column(DataType.UUID)
+  @AllowNull(false)
+  usuarioId: string;
 
-    usuarioNotificacao.belongsTo(usuario, { foreignKey: 'usuarioId' });
-    usuarioNotificacao.belongsTo(notificacao, { foreignKey: 'notificacaoId' });
-  };
+  @Column(DataType.INTEGER)
+  @AllowNull(false)
+  @Default(usuarioNotificacaoEnum.naoLido)
+  @IsIn([Object.values(usuarioNotificacaoEnum)])
+  status: usuarioNotificacaoEnum;
 
-  return usuarioNotificacao;
-};
+  @BelongsTo(() => Usuario)
+  usuario: Usuario;
 
-export default usuarioNotificacaoModel;
+  @BelongsTo(() => Notificacao)
+  notificacao: Notificacao;
+
+}

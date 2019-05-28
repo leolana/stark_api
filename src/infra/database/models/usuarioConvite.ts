@@ -41,6 +41,7 @@ export class UsuarioConvite extends Model<UsuarioConvite> {
   @Column(DataType.DATE)
   @AllowNull(false)
   expiraEm: Date;
+
 }
 
 function knownRolesValidation(value: any) {

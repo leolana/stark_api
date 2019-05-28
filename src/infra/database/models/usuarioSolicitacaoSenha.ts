@@ -1,28 +1,22 @@
 // tslint:disable:no-magic-numbers
-import { Sequelize, DataTypes } from 'sequelize-database';
+import { Table, Column, PrimaryKey, DataType, Model, Default, AllowNull } from 'sequelize-typescript';
 
-const usuarioSolicitacaoSenhaModel = (sequelize: Sequelize, dataTypes: DataTypes)  => {
+@Table({
+  timestamps: true
+})
+export class UsuarioSolicitacaoSenha extends Model<UsuarioSolicitacaoSenha> {
 
-  const usuarioSolicitacaoSenha = sequelize.define(
-    'usuarioSolicitacaoSenha',
-    {
-      codigo: {
-        type: dataTypes.UUID,
-        defaultValue: dataTypes.UUIDV1,
-        primaryKey: true
-      },
-      email: {
-        type: dataTypes.STRING(100),
-        allowNull: false
-      },
-      expiraEm: {
-        type: dataTypes.DATE,
-        allowNull: false
-      }
-    }
-  );
+  @Column(DataType.UUID)
+  @PrimaryKey
+  @Default(DataType.UUIDV1)
+  codigo: string;
 
-  return usuarioSolicitacaoSenha;
-};
+  @Column(DataType.STRING(100))
+  @AllowNull(false)
+  email: string;
 
-export default usuarioSolicitacaoSenhaModel;
+  @Column(DataType.DATE)
+  @AllowNull(false)
+  expiraEm: Date;
+
+}

@@ -1,42 +1,41 @@
 // tslint:disable:no-magic-numbers
-import { Sequelize, DataTypes } from 'sequelize-database';
+import { Table, Model, Column, DataType, AllowNull, IsIn, BelongsTo, ForeignKey, HasMany } from 'sequelize-typescript';
 import notificacaoCategoriaEnum from '../../../domain/services/notificacoes/notificacaoCategoriaEnum';
+import { Usuario } from './usuario';
+import { NotificacaoCategoria } from './notificacaoCategoria';
+import { UsuarioNotificacao } from './usuarioNotificacao';
 
-const notificacaoModel = (sequelize: Sequelize, dataTypes: DataTypes) => {
+@Table({
+  timestamps: true
+})
+export class Notificacao extends Model<Notificacao> {
 
-  const notificacao = sequelize.define(
-    'notificacao',
-    {
-      categoriaId: {
-        type: dataTypes.INTEGER,
-        allowNull: false,
-        validate: {
-          isIn: [<any[]>Object.values(notificacaoCategoriaEnum)]
-        }
-      },
-      criadorId: {
-        type: dataTypes.UUID,
-        allowNull: true,
-      },
-      mensagem: {
-        type: dataTypes.STRING(200),
-        allowNull: false,
-      },
-      dataExpiracao: {
-        type: dataTypes.DATE,
-        allowNull: false,
-      }
-    }
-  );
-  notificacao.associate = (models) => {
-    const { notificacaoCategoria, usuario, usuarioNotificacao } = models;
+  @ForeignKey(() => NotificacaoCategoria)
+  @Column(DataType.INTEGER)
+  @AllowNull(false)
+  @IsIn([Object.values(notificacaoCategoriaEnum)])
+  categoriaId: notificacaoCategoriaEnum;
 
-    notificacao.belongsTo(notificacaoCategoria, { foreignKey: 'categoriaId' });
-    notificacao.belongsTo(usuario, { foreignKey: 'criadorId' });
-    notificacao.hasMany(usuarioNotificacao, { as: 'usuarioNotificacao', foreignKey: 'notificacaoId' });
-  };
+  @ForeignKey(() => Usuario)
+  @Column(DataType.UUID)
+  @AllowNull(true)
+  criadorId: number;
 
-  return notificacao;
-};
+  @Column(DataType.STRING(200))
+  @AllowNull(false)
+  mensagem: string;
 
-export default notificacaoModel;
+  @Column(DataType.DATE)
+  @AllowNull(false)
+  dataExpiracao: Date;
+
+  @BelongsTo(() => NotificacaoCategoria)
+  notificacaoCategoria: NotificacaoCategoria;
+
+  @BelongsTo(() => Usuario)
+  usuario: Usuario;
+
+  @HasMany(() => UsuarioNotificacao)
+  usuarioNotificacao: UsuarioNotificacao[];
+
+}

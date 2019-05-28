@@ -1,25 +1,17 @@
 // tslint:disable:no-magic-numbers
-import { Sequelize, DataTypes } from 'sequelize-database';
+import { Table, Model, Column, DataType, AllowNull } from 'sequelize-typescript';
 
-const migrationModel = (sequelize: Sequelize, dataTypes: DataTypes) => {
-  const migration = sequelize.define(
-    '_migration',
-    {
-      key: {
-        type: dataTypes.STRING(40),
-        allowNull: false
-      },
-      executedAt: {
-        type: dataTypes.DATE,
-        allowNull: true
-      }
-    },
-    {
-      timestamps: false
-    }
-  );
+@Table({
+  timestamps: true
+})
+export class Migration extends Model<Migration> {
 
-  return migration;
-};
+  @Column(DataType.STRING(40))
+  @AllowNull(false)
+  key: string;
 
-export default migrationModel;
+  @Column(DataType.DATE)
+  @AllowNull(true)
+  executedAt: Date;
+
+}
