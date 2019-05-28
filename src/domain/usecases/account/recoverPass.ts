@@ -1,5 +1,5 @@
 import { Auth } from '../../../infra/auth';
-import { Usuario } from '../../../infra/database/models/usuario';
+import { Usuario } from '../../../infra/database';
 
 const recoverPass = (auth: Auth) => async (userEmail: string) => {
 

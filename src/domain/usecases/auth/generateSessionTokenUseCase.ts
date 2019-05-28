@@ -1,8 +1,7 @@
 import AuthProd from '../../../infra/auth/AuthProd';
 import * as jwt from 'jsonwebtoken';
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
-import { Membro } from '../../../infra/database/models/membro';
-import { Usuario } from '../../../infra/database/models/usuario';
+import { Membro, Usuario } from '../../../infra/database';
 
 const generateSessionTokenUseCase = (auth: AuthProd) =>
 

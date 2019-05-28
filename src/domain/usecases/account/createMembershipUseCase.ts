@@ -1,6 +1,5 @@
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
-import { Usuario } from '../../../infra/database/models/usuario';
-import { Membro } from '../../../infra/database/models/membro';
+import { Usuario, Membro } from '../../../infra/database';
 
 const createMembershipsUseCase = async (participanteId: number, usuarioId: string, role?: string) => {
   if (!participanteId || isNaN(participanteId) && !usuarioId) {

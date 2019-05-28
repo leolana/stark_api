@@ -1,7 +1,7 @@
 import paramsEnum from '../../../domain/services/account/paramsEnum';
 import { MailerEnv } from '../../../infra/environment/Environment';
 import { Mailer } from '../../../infra/mailer';
-import { UsuarioConvite } from '../../../infra/database/models/usuarioConvite';
+import { UsuarioConvite } from '../../../infra/database';
 import { LoggerInterface } from '../../../infra/logging';
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
 import { DateTime } from 'luxon';
