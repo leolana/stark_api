@@ -1,6 +1,7 @@
 // tslint:disable-next-line:no-commented-code
 // tslint:disable:no-parameter-reassignment
 // tslint:disable:no-magic-numbers
+
 import { join } from 'path';
 
 export function getOsEnv(key: string): string {
@@ -35,7 +36,7 @@ export function getOsPaths(key: string): string[] {
 }
 
 export function getOsEnvArray(key: string, delimiter: string = ','): string[] {
-  return (process.env[key] && process.ensrc / infra / environment / envProcess.tsv[key].split(delimiter)) || [];
+  return (process.env[key] && process.env[key].split(delimiter)) || [];
 }
 
 export function toNumber(value: string): number {
