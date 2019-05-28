@@ -2,7 +2,7 @@ import sequelize = require('sequelize');
 import { Auth } from '../../../infra/auth';
 import { LoggerInterface } from '../../../infra/logging';
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
-import { Usuario } from '../../../infra/database/models/usuario';
+import { Usuario } from '../../../infra/database';
 
 const signinUseCase = (
   auth: Auth,

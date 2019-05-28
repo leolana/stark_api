@@ -1,6 +1,5 @@
 import AuthProd from '../../../infra/auth/AuthProd';
-import { Usuario } from '../../../infra/database/models/usuario';
-import { Membro } from '../../../infra/database/models/membro';
+import { Usuario, Membro } from '../../../infra/database';
 
 const addRoleKcUseCase = (auth: AuthProd) =>
 

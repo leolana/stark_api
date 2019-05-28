@@ -1,9 +1,9 @@
 // tslint:disable:no-magic-numbers
 import { Table, Model, Column, DataType, AllowNull, IsIn, BelongsTo, ForeignKey, HasMany } from 'sequelize-typescript';
 import notificacaoCategoriaEnum from '../../../domain/services/notificacoes/notificacaoCategoriaEnum';
-import { Usuario } from './usuario';
-import { NotificacaoCategoria } from './notificacaoCategoria';
-import { UsuarioNotificacao } from './usuarioNotificacao';
+import { Usuario } from './Usuario';
+import { NotificacaoCategoria } from './NotificacaoCategoria';
+import { UsuarioNotificacao } from './UsuarioNotificacao';
 
 @Table({
   timestamps: true,

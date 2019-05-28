@@ -2,7 +2,7 @@
 import { Table, Model, Column, DataType, HasMany, PrimaryKey, AllowNull, Is, Default } from 'sequelize-typescript';
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
 import { rolesEnum } from '../../../domain/services/auth/rolesEnum';
-import { Membro } from './membro';
+import { Membro } from './Membro';
 
 @Table({
   timestamps: true,
