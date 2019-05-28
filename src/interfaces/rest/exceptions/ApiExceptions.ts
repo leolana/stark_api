@@ -126,6 +126,12 @@ export class InvalidPersonTypeException extends Errors.BadRequestError {
   }
 }
 
+export class InvalidUserPasswordSolicitationException extends Errors.PreconditionFailedError {
+  constructor() {
+    super('solicitacao-invalida');
+  }
+}
+
 export class UsernameAlreadExist extends Errors.ConflictError {
   constructor() {
     super('username-ja-existe');
