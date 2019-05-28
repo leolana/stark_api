@@ -1,59 +1,52 @@
 // tslint:disable:no-magic-numbers
-import { Sequelize, DataTypes } from 'sequelize-database';
-
-import { rolesEnum } from '../../../domain/services/auth/rolesEnum';
+import { Table, Model, Column, DataType, Default, PrimaryKey, AllowNull, Is } from 'sequelize-typescript';
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
+import { rolesEnum } from '../../../domain/services/auth/rolesEnum';
 
-const usuarioConviteModel = (sequelize: Sequelize, dataTypes: DataTypes) => {
+@Table({
+  timestamps: true
+})
+export class UsuarioConvite extends Model<UsuarioConvite> {
+
+  @PrimaryKey
+  @Default(DataType.UUIDV1)
+  @Column(DataType.UUID)
+  codigo: string;
+
+  @Column(DataType.STRING(100))
+  @AllowNull(false)
+  nome: string;
+
+  @Column(DataType.STRING(100))
+  @AllowNull(false)
+  email: string;
+
+  @Column(DataType.STRING(11))
+  @AllowNull(false)
+  celular: string;
+
+  @Column(DataType.ARRAY(DataType.STRING(50)))
+  @AllowNull(false)
+  @Is('knownRoles', knownRolesValidation)
+  roles: string[];
+
+  @AllowNull(false)
+  @Column(DataType.STRING(100))
+  convidadoPor: string;
+
+  @Column(DataType.INTEGER)
+  @AllowNull(false)
+  participante: number;
+
+  @Column(DataType.DATE)
+  @AllowNull(false)
+  expiraEm: Date;
+}
+
+function knownRolesValidation(value: any) {
   const roles = Object.values(rolesEnum);
 
-  const usuarioConvite = sequelize.define(
-    'usuarioConvite',
-    {
-      codigo: {
-        type: dataTypes.UUID,
-        defaultValue: dataTypes.UUIDV1,
-        primaryKey: true
-      },
-      nome: {
-        type: dataTypes.STRING(100),
-        allowNull: false
-      },
-      email: {
-        type: dataTypes.STRING(100),
-        allowNull: false
-      },
-      celular: {
-        type: dataTypes.STRING(11),
-        allowNull: false
-      },
-      roles: {
-        type: dataTypes.ARRAY(dataTypes.STRING(50)),
-        allowNull: false,
-        validate: {
-          areKnownRoles: (value) => {
-            if (value.some(v => !roles.includes(v))) {
-              throw new Exceptions.InvalidSentDataException();
-            }
-          }
-        }
-      },
-      convidadoPor: {
-        type: dataTypes.STRING(100),
-        allowNull: false
-      },
-      participante: {
-        type: dataTypes.INTEGER,
-        allowNull: false,
-      },
-      expiraEm: {
-        type: dataTypes.DATE,
-        allowNull: false
-      }
-    }
-  );
-
-  return usuarioConvite;
-};
-
-export default usuarioConviteModel;
+  if (value.some((v: any) => !roles.includes(v))) {
+    throw new Exceptions.InvalidSentDataException();
+  }
+}
