@@ -99,20 +99,10 @@ export class EnvParamStoreBuilder {
   addInternalApiEnv = (keyParams, valueParams: SSM.Types.ParameterList): EnvParamStoreBuilder => {
     const addressBancos = getOsEnv(valueParams, this.configParamStoreAppPath, keyParams.addressBancos);
     const addressCEPs = getOsEnv(valueParams, this.configParamStoreAppPath, keyParams.addressCEPs);
-    const financial = {
-      auth: Buffer.from(
-        `${getOsEnv(valueParams, this.configParamStoreAppPath, keyParams.financial.login)}:${getOsEnv(
-          valueParams, this.configParamStoreAppPath,
-          keyParams.financial.password
-        )}`
-      ).toString('base64'),
-      address: getOsEnv(valueParams, this.configParamStoreAppPath, keyParams.financial.address),
-    };
 
     const internalApiParamsEnv = {
       addressBancos,
       addressCEPs,
-      financial,
     } as InternalApiEnv;
 
     const internalApiEnv: InternalApiEnv = Object.assign({}, this.configDefault.internalApis, internalApiParamsEnv);

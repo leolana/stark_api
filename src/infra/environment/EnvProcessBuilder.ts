@@ -114,14 +114,6 @@ export class EnvProcessBuilder {
       enableMock: toBool(getOsEnvOptional('ENABLE_MOCK_INTERNALAPIS')),
       addressBancos: getOsEnv('ALPE_APIS_BANCOS_ADDRESS'),
       addressCEPs: getOsEnv('ALPE_APIS_CEPS_ADDRESS'),
-      financial: {
-        auth: Buffer.from(
-          `${getOsEnv('ALPE_APIS_FINANCIAL_LOGIN')}:${getOsEnv(
-            'ALPE_APIS_FINANCIAL_PWD'
-          )}`
-        ).toString('base64'),
-        address: getOsEnv('ALPE_APIS_FINANCIAL_ADDRESS'),
-      },
     } as InternalApiEnv;
 
     const internalApiEnv: InternalApiEnv = Object.assign({}, this.configDefault.internalApis, internalApiProcessEnv);

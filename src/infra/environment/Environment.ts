@@ -33,10 +33,6 @@ export type InternalApiEnv = {
   enableMock: boolean,
   addressBancos: string,
   addressCEPs: string,
-  financial: {
-    auth: string,
-    address: string,
-  },
 };
 
 export type StorageEnv = {
