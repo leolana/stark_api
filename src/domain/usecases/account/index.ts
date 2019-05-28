@@ -13,10 +13,10 @@ import checkMembershipsUseCase from './checkMembershipsUseCase';
 
 export interface AccountUseCases {
   signin?: ReturnType<typeof signinUseCase>;
-  deleteInvite?: ReturnType<typeof deleteInvite>;
+  deleteInvite?: typeof deleteInvite;
   resendInvite?: ReturnType<typeof resendInvite>;
   recoverPass?: ReturnType<typeof recoverPass>;
-  createMembershipUseCase?: ReturnType<typeof createMembershipUseCase>;
+  createMembershipUseCase?: typeof createMembershipUseCase;
   checkMembershipsUseCase?: ReturnType<typeof checkMembershipsUseCase>;
 }
 
@@ -31,10 +31,10 @@ export function getAccountUseCases(
   const usecases: AccountUseCases = {};
 
   usecases.signin = signinUseCase(db, auth, logger);
-  usecases.deleteInvite = deleteInvite(db);
+  usecases.deleteInvite = deleteInvite;
   usecases.resendInvite = resendInvite(db, mailer, emailTemplates, settings);
   usecases.recoverPass = recoverPass(db, auth);
-  usecases.createMembershipUseCase = createMembershipUseCase(db);
+  usecases.createMembershipUseCase = createMembershipUseCase;
   usecases.checkMembershipsUseCase = checkMembershipsUseCase(db);
 
   return usecases;

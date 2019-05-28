@@ -1,22 +1,17 @@
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
-import { Sequelize } from 'sequelize-typescript';
+import { Usuario } from '../../../infra/database/models/usuario';
+import { Membro } from '../../../infra/database/models/membro';
 
-const createMembershipsUseCase = (
-  db: Sequelize
-) => async (participanteId: number, usuarioId: string, role?: string) => {
+const createMembershipsUseCase = async (participanteId: number, usuarioId: string, role?: string) => {
   if (!participanteId || isNaN(participanteId) && !usuarioId) {
     throw new Exceptions.CouldNotCreatBondException();
   }
 
-  const usuario = await db.entities.usuario.findOne({
+  const usuario = await Usuario.findOne({
     where: { id: usuarioId, ativo: true }
   });
 
-  const participante = await db.entities.participante.findOne({
-    where: { id: participanteId, ativo: true }
-  });
-
-  if (!participante || !usuario) {
+  if (!usuario) {
     throw new Exceptions.CouldNotCreatBondException();
   }
 
@@ -24,19 +19,21 @@ const createMembershipsUseCase = (
     const jaTemRole = usuario.roles.find(userRole => userRole === role);
     if (!jaTemRole) {
       const roles = [...usuario.roles, role];
+
       try {
-        await usuario.update({ roles });
+        await usuario.update({
+          roles
+        });
       } catch (error) {
         throw new Exceptions.CouldNotCreatBondException();
       }
     }
   }
 
-  await db.entities.membro.create({
+  await Membro.create({
     participanteId,
     usuarioId
   });
-
 };
 
 export default createMembershipsUseCase;

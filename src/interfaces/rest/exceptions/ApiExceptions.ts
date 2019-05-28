@@ -6,6 +6,12 @@ export class ProviderNotFoundException extends Errors.NotFoundError {
   }
 }
 
+export class CouldNotCreatBondException extends Errors.NotFoundError {
+  constructor() {
+    super('erro-criar-vinculo');
+  }
+}
+
 export class NotAvailableOptionException extends Errors.PreconditionFailedError {
   constructor() {
     super('option-not-available');
