@@ -12,22 +12,22 @@ import { UsuarioNotificacao } from './UsuarioNotificacao';
 export class Notificacao extends Model<Notificacao> {
 
   @ForeignKey(() => NotificacaoCategoria)
-  @Column(DataType.INTEGER)
   @AllowNull(false)
   @IsIn([Object.values(notificacaoCategoriaEnum)])
+  @Column(DataType.INTEGER)
   categoriaId: notificacaoCategoriaEnum;
 
   @ForeignKey(() => Usuario)
-  @Column(DataType.UUID)
   @AllowNull(true)
+  @Column(DataType.UUID)
   criadorId: number;
 
-  @Column(DataType.STRING(200))
   @AllowNull(false)
+  @Column(DataType.STRING(200))
   mensagem: string;
 
-  @Column(DataType.DATE)
   @AllowNull(false)
+  @Column(DataType.DATE)
   dataExpiracao: Date;
 
   @BelongsTo(() => NotificacaoCategoria)

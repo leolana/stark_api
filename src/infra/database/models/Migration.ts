@@ -7,12 +7,12 @@ import { Table, Model, Column, DataType, AllowNull } from 'sequelize-typescript'
 })
 export class Migration extends Model<Migration> {
 
-  @Column(DataType.STRING(40))
   @AllowNull(false)
+  @Column(DataType.STRING(40))
   key: string;
 
-  @Column(DataType.DATE)
   @AllowNull(true)
+  @Column(DataType.DATE)
   executedAt: Date;
 
 }

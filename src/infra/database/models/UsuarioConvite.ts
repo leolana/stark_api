@@ -14,33 +14,33 @@ export class UsuarioConvite extends Model<UsuarioConvite> {
   @Column(DataType.UUID)
   codigo: string;
 
-  @Column(DataType.STRING(100))
   @AllowNull(false)
+  @Column(DataType.STRING(100))
   nome: string;
 
-  @Column(DataType.STRING(100))
   @AllowNull(false)
+  @Column(DataType.STRING(100))
   email: string;
 
-  @Column(DataType.STRING(11))
   @AllowNull(false)
+  @Column(DataType.STRING(11))
   celular: string;
 
-  @Column(DataType.ARRAY(DataType.STRING(50)))
   @AllowNull(false)
   @Is('knownRoles', knownRolesValidation)
+  @Column(DataType.ARRAY(DataType.STRING(50)))
   roles: string[];
 
   @AllowNull(false)
   @Column(DataType.STRING(100))
   convidadoPor: string;
 
-  @Column(DataType.INTEGER)
   @AllowNull(false)
+  @Column(DataType.INTEGER)
   participante: number;
 
-  @Column(DataType.DATE)
   @AllowNull(false)
+  @Column(DataType.DATE)
   expiraEm: Date;
 
 }

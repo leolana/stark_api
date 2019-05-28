@@ -7,17 +7,17 @@ import { Table, Column, PrimaryKey, DataType, Model, Default, AllowNull } from '
 })
 export class UsuarioSolicitacaoSenha extends Model<UsuarioSolicitacaoSenha> {
 
-  @Column(DataType.UUID)
   @PrimaryKey
   @Default(DataType.UUIDV1)
+  @Column(DataType.UUID)
   codigo: string;
 
-  @Column(DataType.STRING(100))
   @AllowNull(false)
+  @Column(DataType.STRING(100))
   email: string;
 
-  @Column(DataType.DATE)
   @AllowNull(false)
+  @Column(DataType.DATE)
   expiraEm: Date;
 
 }

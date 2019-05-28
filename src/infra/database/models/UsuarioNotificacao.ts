@@ -11,19 +11,19 @@ import { Notificacao } from './Notificacao';
 export class UsuarioNotificacao extends Model<UsuarioNotificacao> {
 
   @ForeignKey(() => Notificacao)
-  @Column(DataType.INTEGER)
   @AllowNull(false)
+  @Column(DataType.INTEGER)
   notificacaoId: number;
 
   @ForeignKey(() => Usuario)
-  @Column(DataType.UUID)
   @AllowNull(false)
+  @Column(DataType.UUID)
   usuarioId: string;
 
-  @Column(DataType.INTEGER)
   @AllowNull(false)
   @Default(usuarioNotificacaoEnum.naoLido)
   @IsIn([Object.values(usuarioNotificacaoEnum)])
+  @Column(DataType.INTEGER)
   status: usuarioNotificacaoEnum;
 
   @BelongsTo(() => Usuario)

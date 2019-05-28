@@ -13,8 +13,8 @@ export class Membro extends Model<Membro> {
   participanteId: number;
 
   @PrimaryKey
-  @Column(DataType.UUID)
   @ForeignKey(() => Usuario)
+  @Column(DataType.UUID)
   usuarioId: number;
 
   @BelongsTo(() => Usuario)

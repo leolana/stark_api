@@ -7,13 +7,13 @@ import { Table, Column, AllowNull, DataType, Default, Model } from 'sequelize-ty
 })
 export class NotificacaoCategoria extends Model<NotificacaoCategoria> {
 
-  @Column(DataType.STRING(50))
   @AllowNull(false)
+  @Column(DataType.STRING(50))
   categoria: string;
 
-  @Column(DataType.BOOLEAN)
   @AllowNull(false)
   @Default(true)
+  @Column(DataType.BOOLEAN)
   ativo: boolean;
 
 }
