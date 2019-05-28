@@ -5,7 +5,6 @@ import { Sequelize } from 'sequelize-database';
 
 import Controller from '../Controller';
 import credenciamentoStatusEnum from '../../../domain/entities/credenciamentoStatusEnum';
-import { SiscofConnector } from '../../../infra/siscof';
 import Auth from '../../../infra/auth/Auth';
 import { Mailer } from '../../../infra/mailer';
 import { Environment, AppEnv } from '../../../infra/environment/Environment';
@@ -15,7 +14,6 @@ import { HealthCheckUseCases, getHealthCheckUseCases } from '../../../domain/use
 
 @injectable()
 class HealthController implements Controller {
-  siscof: SiscofConnector;
   auth: Auth;
   statusCredenciamento: any;
   mailer: Mailer;
@@ -25,18 +23,16 @@ class HealthController implements Controller {
 
   constructor(
     @inject(types.Database) private db: Sequelize,
-    @inject(types.SiscofConnectorFactory) siscof: () => SiscofConnector,
     @inject(types.AuthFactory) auth: () => Auth,
     @inject(types.MailerFactory) mailer: () => Mailer,
     @inject(types.Environment) config: Environment,
   ) {
-    this.siscof = siscof();
     this.auth = auth();
     this.statusCredenciamento = credenciamentoStatusEnum;
     this.mailer = mailer();
     this.emailTemplates = this.mailer.emailTemplates;
     this.settings = config.app;
-    this.usecases = getHealthCheckUseCases(db, siscof(), auth());
+    this.usecases = getHealthCheckUseCases(db, auth());
   }
 
   get router(): Router {
@@ -45,7 +41,6 @@ class HealthController implements Controller {
     router.get('/health-check', this.healthCheck);
     router.post('/health-kc', this.healthKc);
     router.get('/health/testPostgresConnection', this.testPostgresConnection);
-    router.get('/health/testOracleConnection', this.testOracleConnection);
     router.get('/health/testKeyCloakAccess', this.testKeyCloakAccess);
     router.post('/health/testMailer', this.testMailer);
     router.get('/health/getStatusCredenciamentos', this.getStatusCredenciamentos);
@@ -62,7 +57,6 @@ class HealthController implements Controller {
     try {
       const results = await Promise.all([
         this.usecases.testPostgresConnectionUseCase(),
-        this.usecases.testOracleConnectionUseCase(),
         this.usecases.testKeyCloakAccessUseCase()
       ]);
 
@@ -99,15 +93,6 @@ class HealthController implements Controller {
     try {
       const postgres = await this.usecases.testPostgresConnectionUseCase();
       res.send({ error: postgres, result: !postgres });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  testOracleConnection = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    try {
-      const oracle = await this.usecases.testOracleConnectionUseCase();
-      res.send({ error: oracle, result: !oracle });
     } catch (error) {
       next(error);
     }
