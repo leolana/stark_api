@@ -1,4 +1,4 @@
-import deformatDocument from '../credenciamento/deformatDocument';
+import deformatDocument from '../services/document/deformatDocument';
 
 export enum personTypeEnum {
   fisica = 1,

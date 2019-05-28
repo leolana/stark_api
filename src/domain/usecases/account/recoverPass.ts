@@ -1,20 +1,22 @@
-const recoverPass = (db, auth) => (userEmail) => {
-  const findUser = () => {
-    const where = { email: userEmail };
+import { Auth } from '../../../infra/auth';
+import { Usuario } from '../../../infra/database/models/usuario';
 
-    return db.entities.usuario.findOne({ where });
-  };
+const recoverPass = (auth: Auth) => async (userEmail: string) => {
 
-  const recoverPassword = (user) => {
-    const email = userEmail;
-    if (user) {
-      return auth.recoverPassword({ email })
-        .then(() => true);
+  const user = Usuario.findOne({
+    where: {
+      email: userEmail
     }
-    return false;
-  };
+  });
 
-  return findUser().then(recoverPassword);
+  const email = userEmail;
+
+  if (user) {
+    await auth.recoverPassword({ email });
+    return true;
+  }
+
+  return false;
 };
 
 export default recoverPass;

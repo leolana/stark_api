@@ -1,3 +1,5 @@
-export const paramsEnum = {
-  prazoExpiracaoConviteEmDias: 5,
-};
+enum paramsEnum {
+  prazoExpiracaoConviteEmDias = 5,
+}
+
+export default paramsEnum;

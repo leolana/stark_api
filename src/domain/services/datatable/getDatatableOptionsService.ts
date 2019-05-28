@@ -1,4 +1,4 @@
-export const getDatatableOptionsService = (query) => {
+export const getDatatableOptionsService = (query: any) => {
   const datatablePaginator: DatatableInterface = {
     pageSize: +query.pageSize,
     pageIndex: +query.pageIndex,
@@ -6,7 +6,7 @@ export const getDatatableOptionsService = (query) => {
     sortOrder: query.sortOrder
   };
 
-  return datatablePaginator;
+  return (datatablePaginator);
 };
 
 export interface DatatableInterface {
