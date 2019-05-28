@@ -6,8 +6,6 @@ export const unless = {
     '/recover-password',
     '/reset-password',
     '/register',
-    '/siscofPing',
-    '/siscofDate',
     '/health-check',
     '/health-kc',
   ],

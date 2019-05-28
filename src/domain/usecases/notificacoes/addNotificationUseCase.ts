@@ -1,7 +1,7 @@
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
 import { Sequelize } from 'sequelize-database';
 import usuarioNotificacaoEnum from '../../../domain/services/notificacoes/usuarioNotificacaoEnum';
-import { getTipoDocumento, getSiglaParticipante } from '../../../domain/services/participante/personTypeEnum';
+import { getTipoDocumento, getSiglaParticipante } from '../../../domain/entities/personTypeEnum';
 
 const addNotificationUseCase = (db: Sequelize) => async (
   data: any,

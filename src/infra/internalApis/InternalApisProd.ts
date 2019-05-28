@@ -33,66 +33,6 @@ class InternalApisProd implements InternalApis {
         throw new CepNotFoundException();
       });
   }
-
-  obterFinanceiroBandeiras = () => {
-    const options = {
-      method: 'GET',
-      uri: `${this.settings.financial.address}/brand-card`,
-      headers: {
-        Authorization: `Basic ${this.settings.financial.auth}`
-      },
-      json: true
-    };
-
-    return request(options);
-  }
-
-  obterTipoOperacao = () => {
-    const options = {
-      method: 'GET',
-      uri: `${this.settings.financial.address}/operation-type`,
-      headers: {
-        Authorization: `Basic ${this.settings.financial.auth}`
-      },
-      json: true
-    };
-
-    return request(options);
-  }
-  obterTransacoesResumo = (document) => {
-    const options = {
-      method: 'POST',
-      uri: `${this.settings.financial.address}/transaction/resume`,
-      headers: {
-        Authorization: `Basic ${this.settings.financial.auth}`
-      },
-      body: {
-        document
-      },
-      json: true
-    };
-
-    return request(options);
-  }
-  obterFinanceiroAnalitico = (document, filters) => {
-    const options = {
-      method: 'POST',
-      uri: `${this.settings.financial.address}/analytical`,
-      headers: {
-        Authorization: `Basic ${this.settings.financial.auth}`
-      },
-      body: {
-        document
-      },
-      json: true
-    };
-
-    if (filters) {
-      options.body = Object.assign(filters, options.body);
-    }
-
-    return request(options);
-  }
 }
 
 export default InternalApisProd;

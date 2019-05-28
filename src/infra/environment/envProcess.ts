@@ -1,3 +1,4 @@
+// tslint:disable-next-line:no-commented-code
 // tslint:disable:no-parameter-reassignment
 // tslint:disable:no-magic-numbers
 
@@ -49,11 +50,9 @@ export function toBool(value: string): boolean {
 export function normalizePort(port: string): number | string | boolean {
   const parsedPort = parseInt(port, 10);
   if (isNaN(parsedPort)) {
-    // named pipe
     return port;
   }
   if (parsedPort >= 0) {
-    // port number
     return parsedPort;
   }
   return false;
