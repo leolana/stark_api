@@ -6,7 +6,8 @@ import { NotificacaoCategoria } from './notificacaoCategoria';
 import { UsuarioNotificacao } from './usuarioNotificacao';
 
 @Table({
-  timestamps: true
+  timestamps: true,
+  tableName: 'notificacao'
 })
 export class Notificacao extends Model<Notificacao> {
 

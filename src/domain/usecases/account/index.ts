@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 import { Mailer } from '../../../infra/mailer';
 import { Auth } from '../../../infra/auth';
 import { LoggerInterface } from '../../../infra/logging';

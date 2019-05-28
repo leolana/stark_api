@@ -4,7 +4,8 @@ import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
 import { rolesEnum } from '../../../domain/services/auth/rolesEnum';
 
 @Table({
-  timestamps: true
+  timestamps: true,
+  tableName: 'usuarioConvite'
 })
 export class UsuarioConvite extends Model<UsuarioConvite> {
 

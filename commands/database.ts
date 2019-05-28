@@ -1,5 +1,5 @@
 import * as Sequelize from 'sequelize';
-import { Sequelize as DB } from 'sequelize-database';
+import { Sequelize as DB } from 'sequelize-typescript';
 
 import ModelsLoader from '../src/infra/database/ModelsLoader';
 import { config } from './config';

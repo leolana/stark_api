@@ -1,5 +1,5 @@
 import { InviteNotFoundException } from '../../../interfaces/rest/exceptions/ApiExceptions';
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 
 const deleteInvite = (db: Sequelize) => (inviteId: string, transaction: any) => {
   const find = () => db.entities.usuarioConvite.findOne({

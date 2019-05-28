@@ -1,5 +1,5 @@
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 import usuarioNotificacaoEnum from '../../../domain/services/notificacoes/usuarioNotificacaoEnum';
 import { getTipoDocumento, getSiglaParticipante } from '../../../domain/entities/personTypeEnum';
 

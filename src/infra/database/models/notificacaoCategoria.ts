@@ -2,7 +2,8 @@
 import { Table, Column, AllowNull, DataType, Default, Model } from 'sequelize-typescript';
 
 @Table({
-  timestamps: true
+  timestamps: true,
+  tableName: 'notificacaoCategoria'
 })
 export class NotificacaoCategoria extends Model<NotificacaoCategoria> {
 

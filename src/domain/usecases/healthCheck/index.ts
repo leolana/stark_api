@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 import { Auth } from '../../../infra/auth';
 import testPostgresConnectionUseCase from './testPostgresConnectionUseCase';
 import testKeyCloakAccessUseCase from './testKeyCloakAccessUseCase';

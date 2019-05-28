@@ -2,7 +2,8 @@
 import { Table, Column, PrimaryKey, DataType, Model, Default, AllowNull } from 'sequelize-typescript';
 
 @Table({
-  timestamps: true
+  timestamps: true,
+  tableName: 'usuarioSolicitacaoSenha'
 })
 export class UsuarioSolicitacaoSenha extends Model<UsuarioSolicitacaoSenha> {
 

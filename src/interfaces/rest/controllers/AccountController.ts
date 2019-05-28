@@ -1,7 +1,7 @@
 import { Router, Response, NextFunction } from 'express';
 import { Request } from 'express-request';
 import { injectable, inject } from 'inversify';
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 
 import Controller from '../Controller';
 import Auth from '../../../infra/auth/Auth';
@@ -13,6 +13,8 @@ import { Environment } from '../../../infra/environment/Environment';
 
 import types from '../../../constants/types';
 import * as Exceptions from '../exceptions/ApiExceptions';
+import { Usuario } from '../../../infra/database/models/usuario';
+import { Membro } from '../../../infra/database/models/membro';
 
 @injectable()
 class AccountController implements Controller {
@@ -90,26 +92,19 @@ class AccountController implements Controller {
     try {
       email = req.body.email;
 
-      const usuario = await this.db.entities.usuario.findOne({
+      const usuario = await Usuario.findOne({
         where: { email },
         include: [
           {
-            model: this.db.entities.membro,
+            model: Membro,
             as: 'associacoes',
-            include: [
-              {
-                model: this.db.entities.participante,
-                as: 'participante',
-                attributes: ['id', 'nome']
-              }
-            ]
+            required: true
           }
         ]
       });
 
-      const associacoes = usuario ? usuario.associacoes : [];
-      const participantes = (associacoes || []).map((membro: any) => membro.participante.dataValues);
-      res.send(participantes);
+      const membros = usuario ? usuario.associacoes : [];
+      res.send(membros);
 
     } catch (error) {
       this.logger.info(`Não foi possível buscar os memberships do usuário "${email}".`);

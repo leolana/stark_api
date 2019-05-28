@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 import { UserNotFoundException } from '../../../interfaces/rest/exceptions/ApiExceptions';
 
 const listUserFromIdUseCase = (db: Sequelize) =>
