@@ -6,6 +6,12 @@ export class ProviderNotFoundException extends Errors.NotFoundError {
   }
 }
 
+export class ParticipanteNotFoundException extends Errors.NotFoundError {
+  constructor() {
+    super('participante-nao-encontrado');
+  }
+}
+
 export class CouldNotCreatBondException extends Errors.NotFoundError {
   constructor() {
     super('erro-criar-vinculo');

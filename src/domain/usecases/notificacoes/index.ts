@@ -6,10 +6,10 @@ import addNotificationUseCase from './addNotificationUseCase';
 import getNotificationNonReadUseCase from './getNotificationNonReadUseCase';
 
 export interface NotificationUseCases {
-  getNotificatons?: ReturnType<typeof getNotificationsUseCase>;
-  updateNonRead?: ReturnType<typeof updateNonReadUseCase>;
-  addNotification?: ReturnType<typeof addNotificationUseCase>;
-  getNotificationNonRead?: ReturnType<typeof getNotificationNonReadUseCase>;
+  getNotificatons?: typeof getNotificationsUseCase;
+  updateNonRead?: typeof updateNonReadUseCase;
+  addNotification?: typeof addNotificationUseCase;
+  getNotificationNonRead?: typeof getNotificationNonReadUseCase;
 }
 
 export function getNotificationUseCases(
@@ -17,10 +17,10 @@ export function getNotificationUseCases(
 ) {
   const usecases: NotificationUseCases = {};
 
-  usecases.getNotificatons = getNotificationsUseCase(db);
-  usecases.updateNonRead = updateNonReadUseCase(db);
-  usecases.addNotification = addNotificationUseCase(db);
-  usecases.getNotificationNonRead = getNotificationNonReadUseCase(db);
+  usecases.getNotificatons = getNotificationsUseCase;
+  usecases.updateNonRead = updateNonReadUseCase;
+  usecases.addNotification = addNotificationUseCase;
+  usecases.getNotificationNonRead = getNotificationNonReadUseCase;
 
   return usecases;
 }

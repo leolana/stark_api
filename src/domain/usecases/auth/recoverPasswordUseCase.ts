@@ -1,4 +1,5 @@
 import AuthProd from '../../../infra/auth/AuthProd';
+import { UsuarioSolicitacaoSenha } from '../../../infra/database/models/usuarioSolicitacaoSenha';
 
 const recoverPasswordUseCase = (auth: AuthProd) =>
 
@@ -8,7 +9,7 @@ const recoverPasswordUseCase = (auth: AuthProd) =>
 
     solicitacao.expiraEm = dataExpiracao;
 
-    return auth.db.entities.usuarioSolicitacaoSenha
+    return UsuarioSolicitacaoSenha
       .create(solicitacao)
       .then(novaSolicitacao => auth.mailer.enviar(
         {
