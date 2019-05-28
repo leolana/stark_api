@@ -1,7 +1,6 @@
 import { Router, Response, NextFunction } from 'express';
 import { Request } from 'express-request';
 import { injectable, inject } from 'inversify';
-import { Sequelize } from 'sequelize-typescript';
 
 import Controller from '../Controller';
 import Auth from '../../../infra/auth/Auth';
@@ -23,7 +22,6 @@ class AccountController implements Controller {
   accountUseCases: AccountUseCases;
 
   constructor(
-    @inject(types.Database) private db: Sequelize,
     @inject(types.Environment) private config: Environment,
     @inject(types.Logger) private logger: LoggerInterface,
 
@@ -34,7 +32,6 @@ class AccountController implements Controller {
     this.mailer = mailer();
 
     this.accountUseCases = getAccountUseCases(
-      this.db,
       this.mailer,
       this.mailer.emailTemplates,
       this.config.mailer,
@@ -242,8 +239,8 @@ class AccountController implements Controller {
     try {
       const { codigo, email } = req.body;
 
-      const solicitacao = UsuarioSolicitacaoSenha.findOne({
-        where: {
+      const solicitacao = await UsuarioSolicitacaoSenha.findOne({
+        where: <any>{
           codigo,
           email,
           expiraEm: {

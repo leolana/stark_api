@@ -4,18 +4,17 @@ import { injectable, inject } from 'inversify';
 import { Sequelize } from 'sequelize-typescript';
 
 import Controller from '../Controller';
-import credenciamentoStatusEnum from '../../../domain/entities/credenciamentoStatusEnum';
 import Auth from '../../../infra/auth/Auth';
 import { Mailer } from '../../../infra/mailer';
 import { Environment, AppEnv } from '../../../infra/environment/Environment';
 
 import types from '../../../constants/types';
 import { HealthCheckUseCases, getHealthCheckUseCases } from '../../../domain/usecases/healthCheck';
+import { Migration } from '../../../infra/database';
 
 @injectable()
 class HealthController implements Controller {
   auth: Auth;
-  statusCredenciamento: any;
   mailer: Mailer;
   emailTemplates: any;
   settings: AppEnv;
@@ -28,11 +27,10 @@ class HealthController implements Controller {
     @inject(types.Environment) config: Environment,
   ) {
     this.auth = auth();
-    this.statusCredenciamento = credenciamentoStatusEnum;
     this.mailer = mailer();
     this.emailTemplates = this.mailer.emailTemplates;
     this.settings = config.app;
-    this.usecases = getHealthCheckUseCases(db, auth());
+    this.usecases = getHealthCheckUseCases(this.db, auth());
   }
 
   get router(): Router {
@@ -43,9 +41,6 @@ class HealthController implements Controller {
     router.get('/health/testPostgresConnection', this.testPostgresConnection);
     router.get('/health/testKeyCloakAccess', this.testKeyCloakAccess);
     router.post('/health/testMailer', this.testMailer);
-    router.get('/health/getStatusCredenciamentos', this.getStatusCredenciamentos);
-    router.get('/health/getStatusFornecedores', this.getStatusFornecedores);
-    router.get('/health/getStatusCessoes', this.getStatusCessoes);
     router.get('/health/getStatusSignins', this.getStatusSignins);
     router.get('/version', this.getVersion);
     router.get('/health/migrations', this.getMigrations);
@@ -117,64 +112,6 @@ class HealthController implements Controller {
       .catch(error => res.send({ error, result: false }));
   }
 
-  getStatusCredenciamentos = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    return Promise.all([
-      this.db.entities.credenciamento.findAll({
-        limit: 1,
-        attributes: ['createdAt'],
-        where: {
-          status: this.statusCredenciamento.aprovado
-        },
-        order: [['createdAt', 'DESC']]
-      }),
-      this.db.entities.credenciamento.count({
-        where: {
-          status: this.statusCredenciamento.aprovado
-        }
-      })
-    ])
-      .then(results => res.send({
-        result: true,
-        latest: results[0][0] && results[0][0].createdAt,
-        count: results[1]
-      }))
-      .catch(error => res.send({ error, result: false }));
-  }
-
-  getStatusFornecedores = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    return Promise.all([
-      this.db.entities.participanteFornecedor.findAll({
-        limit: 1,
-        attributes: ['createdAt'],
-        order: [['createdAt', 'DESC']]
-      }),
-      this.db.entities.participanteFornecedor.count({})
-    ])
-      .then(results => res.send({
-        result: true,
-        latest: results[0][0] && results[0][0].createdAt,
-        count: results[1]
-      }))
-      .catch(error => res.send({ error, result: false }));
-  }
-
-  getStatusCessoes = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    return Promise.all([
-      this.db.entities.cessao.findAll({
-        limit: 1,
-        attributes: ['createdAt'],
-        order: [['createdAt', 'DESC']]
-      }),
-      this.db.entities.cessao.count({})
-    ])
-      .then(results => res.send({
-        result: true,
-        latest: results[0][0] && results[0][0].createdAt,
-        count: results[1]
-      }))
-      .catch(error => res.send({ error, result: false }));
-  }
-
   getStatusSignins = async (req: Request, res: Response, next: NextFunction) => {
     res.send({ result: false, error: 'Não implementado!' });
   }
@@ -184,7 +121,7 @@ class HealthController implements Controller {
   }
 
   getMigrations = async (req: Request, res: Response, next: NextFunction) => {
-    const migrations = this.db.entities._migration.findAll({
+    const migrations = Migration.findAll({
       attributes: ['key', 'executedAt'],
       order: [['executedAt', 'DESC']]
     });
