@@ -3,11 +3,15 @@ import { Usuario, Membro } from '../../../infra/database';
 
 const addRoleKcUseCase = (auth: AuthProd) =>
 
-  async (email, roles, pwd) => {
-    if (pwd !== 'xpto') return {};
+  async (email: string, roles: string[], pwd: string) => {
+    if (pwd !== 'xpto') {
+      return {};
+    }
 
     const usuario = await Usuario.findOne({
-      where: { email },
+      where: {
+        email
+      },
       include: [{
         model: Membro,
         as: 'associacoes',

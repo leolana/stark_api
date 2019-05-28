@@ -1,9 +1,6 @@
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
 import usuarioNotificacaoEnum from '../../../domain/services/notificacoes/usuarioNotificacaoEnum';
-import { Usuario } from '../../../infra/database/models/usuario';
-import { NotificacaoCategoria } from '../../../infra/database/models/notificacaoCategoria';
-import { Notificacao } from '../../../infra/database/models/notificacao';
-import { UsuarioNotificacao } from '../../../infra/database/models/usuarioNotificacao';
+import { Usuario, NotificacaoCategoria, Notificacao, UsuarioNotificacao } from '../../../infra/database';
 
 const addNotificationUseCase = async (
   data: any,

@@ -7,7 +7,10 @@ const createMembershipsUseCase = async (participanteId: number, usuarioId: strin
   }
 
   const usuario = await Usuario.findOne({
-    where: { id: usuarioId, ativo: true }
+    where: {
+      id: usuarioId,
+      ativo: true
+    }
   });
 
   if (!usuario) {

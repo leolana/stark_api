@@ -1,8 +1,6 @@
 import AuthProd from '../../../infra/auth/AuthProd';
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
-import { Usuario } from '../../../infra/database/models/usuario';
-import { Membro } from '../../../infra/database/models/membro';
-import { UsuarioConvite } from '../../../infra/database/models/usuarioConvite';
+import { Usuario, Membro, UsuarioConvite } from '../../../infra/database';
 import paramsEnum from '../../../domain/services/account/paramsEnum';
 
 const inviteUserUseCase = (auth: AuthProd) =>
@@ -12,8 +10,8 @@ const inviteUserUseCase = (auth: AuthProd) =>
       where: { email: convite.email },
       include: [{
         model: Membro,
-        as: 'associacoes',
-      }],
+        as: 'associacoes'
+      }]
     });
 
     const checaUsuarioMembro = (usuario) => {

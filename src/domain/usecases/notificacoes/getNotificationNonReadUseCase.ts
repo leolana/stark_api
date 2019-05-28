@@ -1,9 +1,6 @@
 import usuarioNotificacaoEnum from '../../../domain/services/notificacoes/usuarioNotificacaoEnum';
 import { DateTime } from 'luxon';
-import { Usuario } from '../../../infra/database/models/usuario';
-import { Notificacao } from '../../../infra/database/models/notificacao';
-import { NotificacaoCategoria } from '../../../infra/database/models/notificacaoCategoria';
-import { UsuarioNotificacao } from '../../../infra/database/models/usuarioNotificacao';
+import { Usuario, Notificacao, NotificacaoCategoria, UsuarioNotificacao } from '../../../infra/database';
 
 const getNotificationNonReadUseCase = async (userEmail: string) => {
   const user = await Usuario.findOne({

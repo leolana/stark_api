@@ -1,4 +1,3 @@
-import { Sequelize } from 'sequelize-typescript';
 import { Mailer } from '../../../infra/mailer';
 import { Auth } from '../../../infra/auth';
 import { LoggerInterface } from '../../../infra/logging';
@@ -17,11 +16,10 @@ export interface AccountUseCases {
   resendInvite?: ReturnType<typeof resendInvite>;
   recoverPass?: ReturnType<typeof recoverPass>;
   createMembershipUseCase?: typeof createMembershipUseCase;
-  checkMembershipsUseCase?: ReturnType<typeof checkMembershipsUseCase>;
+  checkMembershipsUseCase?: typeof checkMembershipsUseCase;
 }
 
 export function getAccountUseCases(
-  db: Sequelize,
   mailer: Mailer,
   emailTemplates: any,
   settings: MailerEnv,
@@ -30,12 +28,12 @@ export function getAccountUseCases(
 ) {
   const usecases: AccountUseCases = {};
 
-  usecases.signin = signinUseCase(db, auth, logger);
+  usecases.signin = signinUseCase(auth, logger);
   usecases.deleteInvite = deleteInvite;
-  usecases.resendInvite = resendInvite(db, mailer, emailTemplates, settings);
-  usecases.recoverPass = recoverPass(db, auth);
+  usecases.resendInvite = resendInvite(logger, mailer, emailTemplates, settings);
+  usecases.recoverPass = recoverPass(auth);
   usecases.createMembershipUseCase = createMembershipUseCase;
-  usecases.checkMembershipsUseCase = checkMembershipsUseCase(db);
+  usecases.checkMembershipsUseCase = checkMembershipsUseCase;
 
   return usecases;
 }

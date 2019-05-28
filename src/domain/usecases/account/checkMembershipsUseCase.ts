@@ -1,8 +1,7 @@
-import { Sequelize } from 'sequelize-typescript';
 import { DateTime } from 'luxon';
 import { Usuario, Membro, UsuarioConvite } from '../../../infra/database';
 
-const checkMembershipsUseCase = (db: Sequelize) => async (emails: string[]) => {
+const checkMembershipsUseCase = async (emails: string[]) => {
   const users = await Usuario.findAll({
     where: { email: emails },
     attributes: ['id', 'email', 'roles'],

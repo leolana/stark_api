@@ -1,5 +1,5 @@
 import usuarioNotificacaoEnum from '../../../domain/services/notificacoes/usuarioNotificacaoEnum';
-import { UsuarioNotificacao } from '../../../infra/database/models/usuarioNotificacao';
+import { UsuarioNotificacao } from '../../../infra/database';
 
 const updateNonReadUseCase = async (notifications: any[]) => {
   if (!notifications || !notifications.length) {

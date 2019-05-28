@@ -1,5 +1,5 @@
 import AuthProd from '../../../infra/auth/AuthProd';
-import { UsuarioSolicitacaoSenha } from '../../../infra/database/models/usuarioSolicitacaoSenha';
+import { UsuarioSolicitacaoSenha } from '../../../infra/database';
 
 const recoverPasswordUseCase = (auth: AuthProd) =>
 

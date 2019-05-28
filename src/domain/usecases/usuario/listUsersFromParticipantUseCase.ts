@@ -1,30 +1,30 @@
-import { Sequelize } from 'sequelize-typescript';
+import { Membro, Usuario } from '../../../infra/database';
 
-export interface UsuarioDoParticipante {
-  id: number;
-  nome: string;
-  email: string;
-  celular: string;
-  perfis: string[];
-  ativo: boolean;
-}
-
-const listUsersFromParticipantUseCase = (db: Sequelize) => async (idParticipante: number) => {
-  const membros = await db.entities.membro.findAll({
+const listUsersFromParticipantUseCase = async (idParticipante: number) => {
+  const membros = await Membro.findAll({
     where: {
       participanteId: idParticipante,
     },
     attributes: [],
-    include: [{
-      model: db.entities.usuario,
-      as: 'usuario',
-      attributes: ['id', 'nome', 'email', 'celular', ['roles', 'perfis'], 'ativo'],
-    }],
+    include: [
+      {
+        model: Usuario,
+        as: 'usuario',
+        attributes: [
+          'id',
+          'nome',
+          'email',
+          'celular',
+          ['roles', 'perfis'],
+          'ativo'
+        ]
+      }
+    ]
   });
 
-  const usuarios = <UsuarioDoParticipante[]>membros.map(membro => membro.usuario);
+  const usuarios = membros.map(membro => membro.usuario);
 
-  return usuarios;
+  return (usuarios);
 };
 
 export default listUsersFromParticipantUseCase;

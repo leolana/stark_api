@@ -2,33 +2,53 @@ import { Sequelize } from 'sequelize-typescript';
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
 import { Auth } from '../../../infra/auth';
 import { LoggerInterface } from '../../../infra/logging';
+import { Usuario } from '../../../infra/database';
 
 const updateUserStatusUseCase = (
   db: Sequelize,
   auth: Auth,
   logger: LoggerInterface
-) => async (userId: string, userStatus: boolean, email: string) => {
-  const transaction = await db.transaction();
+) =>
 
-  try {
-    const user = await db.entities.usuario.findOne({ transaction, where: { id: userId } });
-    if (!user) {
-      throw new Exceptions.UserNotFoundException();
-    }
-
-    await user.update({ ativo: userStatus }, { transaction });
-    await auth.updateUserStatus(user.id, userStatus);
-
-    await transaction.commit();
+  async (
+    userId: string,
+    userStatus: boolean,
+    email: string
+  ) => {
+    const transaction = await db.transaction();
 
     try {
-      logger.info(`Status do usuário "${userId}" no Keycloak foi alterado para "${userStatus}" por "${email}".`);
-    } catch (e) { }
+      const user = await Usuario.findOne({
+        transaction,
+        where: {
+          id: userId
+        }
+      });
 
-  } catch (error) {
-    transaction.rollback();
-    throw error;
-  }
-};
+      if (!user) {
+        throw new Exceptions.UserNotFoundException();
+      }
+
+      await user.update(
+        { ativo: userStatus },
+        { transaction }
+      );
+
+      await auth.updateUserStatus(
+        user.id,
+        userStatus
+      );
+
+      await transaction.commit();
+
+      try {
+        logger.info(`Status do usuário "${userId}" no Keycloak foi alterado para "${userStatus}" por "${email}".`);
+      } catch (e) { }
+
+    } catch (error) {
+      transaction.rollback();
+      throw error;
+    }
+  };
 
 export default updateUserStatusUseCase;

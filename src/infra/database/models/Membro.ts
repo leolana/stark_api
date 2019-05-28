@@ -18,6 +18,6 @@ export class Membro extends Model<Membro> {
   usuarioId: number;
 
   @BelongsTo(() => Usuario)
-  usuarios: Usuario;
+  usuario: Usuario;
 
 }

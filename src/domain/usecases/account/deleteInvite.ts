@@ -5,7 +5,9 @@ import { Transaction } from 'sequelize';
 const deleteInvite = async (inviteId: string, transaction: Transaction) => {
   const invite = await UsuarioConvite.findOne({
     transaction,
-    where: { codigo: inviteId }
+    where: {
+      codigo: inviteId
+    }
   });
 
   if (!invite) {

@@ -1,27 +1,24 @@
-import { Sequelize } from 'sequelize-typescript';
+import { UsuarioConvite } from '../../../infra/database';
 
-export interface ConviteDoParticipante {
-  nome: string;
-  email: string;
-  celular: string;
-  perfis: string[];
-  expiraEm: Date;
-}
+const listInvitesFromParticipantUseCase = async (idParticipante: number) => {
+  const convites = await UsuarioConvite.findAll({
+    where: {
+      participante: idParticipante,
+    },
+    attributes: [
+      'nome',
+      'email',
+      'celular',
+      ['roles', 'perfis'],
+      'expiraEm'
+    ],
+  });
 
-const listInvitesFromParticipantUseCase = (db: Sequelize) =>
-  async (idParticipante: number): Promise<ConviteDoParticipante[]> => {
-    const convites = await db.entities.usuarioConvite.findAll({
-      where: {
-        participante: idParticipante,
-      },
-      attributes: ['nome', 'email', 'celular', ['roles', 'perfis'], 'expiraEm'],
-    });
+  convites.forEach((convite: any) => {
+    convite.dataValues.status = new Date(convite.expiraEm) < new Date() ? 'Expirado' : 'Pendente';
+  });
 
-    convites.forEach((convite) => {
-      convite.dataValues.status = new Date(convite.expiraEm) < new Date() ? 'Expirado' : 'Pendente';
-    });
-
-    return convites;
-  };
+  return convites;
+};
 
 export default listInvitesFromParticipantUseCase;
