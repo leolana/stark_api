@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 
 const getNotificationUseCase = (db: Sequelize) => (page, limit, userObj) => {
 

@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
 import { Auth } from '../../../infra/auth';
 

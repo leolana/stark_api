@@ -5,7 +5,8 @@ import { Usuario } from './usuario';
 import { Notificacao } from './notificacao';
 
 @Table({
-  timestamps: true
+  timestamps: true,
+  tableName: 'usuarioNotificacao'
 })
 export class UsuarioNotificacao extends Model<UsuarioNotificacao> {
 

@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 import usuarioNotificacaoEnum from '../../../domain/services/notificacoes/usuarioNotificacaoEnum';
 
 const updateNonReadUseCase = (db: Sequelize) => async (notifications: any[]) => {

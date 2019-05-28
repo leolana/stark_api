@@ -1,6 +1,6 @@
 import { paramsEnum as accountParams } from '../../services/account/paramsEnum';
 import { MailerEnv } from '../../../infra/environment/Environment';
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 import { Mailer } from '../../../infra/mailer';
 
 const resendInvite = (db: Sequelize, mailer: Mailer, emailTemplates: any, settings: MailerEnv) => (

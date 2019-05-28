@@ -8,7 +8,7 @@ import * as chance from 'chance';
 
 import termoTipo from '../../domain/entities/termoTipo';
 import { rolesEnum } from '../../domain/services/auth/rolesEnum';
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 import Auth from './Auth';
 import { paramsEnum as accountParams } from '../../domain/services/account/paramsEnum';
 import { typeEnum as tiposParticipante } from '../../domain/services/participante/typeEnum';

@@ -1,5 +1,5 @@
 import * as request from 'request-promise-native';
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 import { injectable, inject } from 'inversify';
 import { Environment, AuthEnv } from '../environment/Environment';
 import { LoggerInterface } from '../logging';

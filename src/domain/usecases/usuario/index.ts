@@ -2,7 +2,7 @@ import listUsersUseCase from './listUsersUseCase';
 import listInvitesUseCase from './listInvitesUseCase';
 import listUsersFromParticipantUseCase from './listUsersFromParticipantUseCase';
 import listInvitesFromParticipantUseCase from './listInvitesFromParticipantUseCase';
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 import inviteUserUseCase from './inviteUserUseCase';
 import { Auth } from '../../../infra/auth';
 import { AccountUseCases } from '../account';

@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 
 export interface ConviteDoParticipante {
   nome: string;

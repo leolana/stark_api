@@ -5,7 +5,8 @@ import { rolesEnum } from '../../../domain/services/auth/rolesEnum';
 import { Membro } from './membro';
 
 @Table({
-  timestamps: true
+  timestamps: true,
+  tableName: 'usuario'
 })
 export class Usuario extends Model<Usuario> {
 

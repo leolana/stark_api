@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 import { DateTime } from 'luxon';
 
 const checkMembershipsUseCase = (db: Sequelize) => async (emails: string[]) => {

@@ -1,5 +1,5 @@
 import sequelize = require('sequelize');
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 import { Auth } from '../../../infra/auth';
 import { LoggerInterface } from '../../../infra/logging';
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';

@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 
 const checkUsernameExistenceUseCase = (db: Sequelize) => async (idUsuario, username) => {
   if (!username) return null;

@@ -3,7 +3,8 @@ import { Table, Model, Column, BelongsTo, DataType, ForeignKey, PrimaryKey } fro
 import { Usuario } from './usuario';
 
 @Table({
-  timestamps: true
+  timestamps: true,
+  tableName: 'membro'
 })
 export class Membro extends Model<Membro> {
 
