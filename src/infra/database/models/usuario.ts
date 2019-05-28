@@ -1,5 +1,5 @@
 // tslint:disable:no-magic-numbers
-import { Table, Model, Column, DataType, HasMany, PrimaryKey, AllowNull } from 'sequelize-typescript';
+import { Table, Model, Column, DataType, HasMany, PrimaryKey, AllowNull, Is, Default } from 'sequelize-typescript';
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
 import { rolesEnum } from '../../../domain/services/auth/rolesEnum';
 import { Membro } from './membro';
@@ -21,42 +21,37 @@ export class Usuario extends Model<Usuario> {
   @Column(DataType.STRING(100))
   email: string;
 
-  @Column({
-    type: DataType.STRING(11),
-    allowNull: false
-  }) celular: string;
+  @AllowNull(false)
+  @Column(DataType.STRING(11))
+  celular: string;
 
-  @Column({
-    type: DataType.STRING(50),
-    allowNull: true,
-  }) username: string;
+  @AllowNull(true)
+  @Column(DataType.STRING(50))
+  username: string;
 
-  @Column({
-    type: DataType.STRING(18),
-    allowNull: true,
-  }) documento: string;
+  @AllowNull(true)
+  @Column(DataType.STRING(18))
+  documento: string;
 
-  @Column({
-    type: DataType.ARRAY(DataType.STRING(50)),
-    allowNull: false,
-    validate: {
-      areKnownRoles: (value: string[]) => {
-        const roles = Object.values(rolesEnum);
+  @Is('knownRoles', knownRolesValidation)
+  @AllowNull(false)
+  @Column(DataType.ARRAY(DataType.STRING(50)))
+  roles: string[];
 
-        if (value.some(v => !roles.includes(v))) {
-          throw new Exceptions.InvalidSentDataException();
-        }
-      }
-    }
-  }) roles: string[];
-
-  @Column({
-    type: DataType.BOOLEAN,
-    allowNull: false,
-    defaultValue: true,
-  }) ativo: boolean;
+  @AllowNull(false)
+  @Default(true)
+  @Column(DataType.BOOLEAN)
+  ativo: boolean;
 
   @HasMany(() => Membro)
   associacoes: Membro[];
 
+}
+
+function knownRolesValidation(value: string[]) {
+  const roles = Object.values(rolesEnum);
+
+  if (value.some(v => !roles.includes(v))) {
+    throw new Exceptions.InvalidSentDataException();
+  }
 }
