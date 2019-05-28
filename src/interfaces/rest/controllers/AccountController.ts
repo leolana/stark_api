@@ -14,9 +14,9 @@ import { Environment } from '../../../infra/environment/Environment';
 import types from '../../../constants/types';
 import * as Exceptions from '../exceptions/ApiExceptions';
 
-import { Usuario } from '../../../infra/database/models/usuario';
-import { Membro } from '../../../infra/database/models/membro';
-import { UsuarioSolicitacaoSenha } from '../../../infra/database/models/usuarioSolicitacaoSenha';
+import { Usuario } from '../../../infra/database/models/Usuario';
+import { Membro } from '../../../infra/database/models/Membro';
+import { UsuarioSolicitacaoSenha } from '../../../infra/database/models/UsuarioSolicitacaoSenha';
 
 @injectable()
 class AccountController implements Controller {

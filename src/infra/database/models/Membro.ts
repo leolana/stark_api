@@ -1,6 +1,6 @@
 // tslint:disable:no-magic-numbers
 import { Table, Model, Column, BelongsTo, DataType, ForeignKey, PrimaryKey } from 'sequelize-typescript';
-import { Usuario } from './usuario';
+import { Usuario } from './Usuario';
 
 @Table({
   timestamps: true,
