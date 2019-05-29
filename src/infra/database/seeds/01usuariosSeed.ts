@@ -1,4 +1,4 @@
-import { QueryInterface, QueryTypes } from 'sequelize';
+import { QueryInterface } from 'sequelize';
 
 import rolesEnum from '../../../domain/services/auth/rolesEnum';
 
@@ -10,16 +10,6 @@ module.exports = {
       createdAt: now,
       updatedAt: now
     };
-
-    const estabelecimento: { participanteId: number }[] = await queryInterface.sequelize.query(
-      'SELECT "participanteId" FROM "participanteEstabelecimento" LIMIT 1;',
-      { type: QueryTypes.SELECT }
-    );
-
-    const fornecedor: { participanteId: number }[] = await queryInterface.sequelize.query(
-      'SELECT "participanteId" FROM "participanteFornecedor" LIMIT 1;',
-      { type: QueryTypes.SELECT }
-    );
 
     const usuarioAlpe = {
       id: '8a799af7-22f9-417d-9602-c49c80ce5a23',
@@ -62,12 +52,12 @@ module.exports = {
       [
         {
           usuarioId: usuarioEC.id,
-          participanteId: estabelecimento[0].participanteId,
+          participanteId: 1,
           ...timestamp
         },
         {
           usuarioId: usuarioFornecedor.id,
-          participanteId: fornecedor[0].participanteId,
+          participanteId: 2,
           ...timestamp
         }
       ]
