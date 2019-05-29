@@ -21,7 +21,8 @@ module.exports = {
 
     const categoriesInserted = <any[]>await queryInterface.bulkInsert(
       'notificacaoCategoria',
-      notificacaoesCategorias
+      notificacaoesCategorias,
+      <any>{ returning: true }
     );
 
     const notificacao = [
@@ -37,7 +38,7 @@ module.exports = {
     const notificationsInserted = <any[]>await queryInterface.bulkInsert(
       'notificacao',
       notificacao,
-      {}
+      <any>{ returning: true }
     );
 
     const usuario: any[] = await queryInterface.sequelize.query(
@@ -57,7 +58,7 @@ module.exports = {
     return queryInterface.bulkInsert(
       'usuarioNotificacao',
       usuarioNotificacao,
-      {}
+      <any>{ returning: true }
     );
   },
   down: async (queryInterface: QueryInterface) => {

@@ -14,7 +14,7 @@ module.exports = {
       { type: QueryTypes.SELECT }
     );
 
-    return queryInterface.bulkInsert(
+    await queryInterface.bulkInsert(
       'usuarioConvite',
       [
         {
@@ -28,8 +28,7 @@ module.exports = {
           expiraEm: '2019-01-01',
           ...timestamp
         }
-      ],
-      {}
+      ]
     );
   },
 
