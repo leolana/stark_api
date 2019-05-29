@@ -22,17 +22,22 @@ export default (req: Request, res: Response, next: NextFunction) => {
   if (unlessSession.includes(req.originalUrl)) {
     next();
   } else {
+    const token = Array.isArray(req.headers.sessiontoken)
+      ? req.headers.sessiontoken[0]
+      : req.headers.sessiontoken;
+
     jwt.verify(
-      Array.isArray(req.headers.sessiontoken) ? req.headers.sessiontoken[0] : req.headers.sessiontoken,
+      token,
       config.auth.clientSecret,
       (error: any, decoded: any) => {
         if (error) {
+          console.error(error);
           res.status(INTERNAL_SERVER_ERROR).json('invalid-credentials');
         } else {
           Object.assign(req.user, decoded);
           next();
         }
-      },
+      }
     );
   }
 };

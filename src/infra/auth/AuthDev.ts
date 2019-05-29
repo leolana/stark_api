@@ -104,22 +104,15 @@ class AuthDev implements Auth {
   }
 
   getUserRoles = (req: Request): rolesEnum[] => {
-    return req.user.resource_access[this.settings.clientId].roles;
+    return [];
   }
 
   hasPermission = (req: Request, ...accessRoles: rolesEnum[]): boolean => {
-    const userRoles = this.getUserRoles(req);
-
-    const isSuper = userRoles.includes(rolesEnum.super);
-    if (isSuper) {
-      return true;
-    }
-
-    return userRoles.some(r => accessRoles.includes(r));
+    return true;
   }
 
-  changeUserRoles = (userId, rolesToRemove, rolesToAdd) => {
-    return Promise.resolve({});
+  changeUserRoles = async (userId, rolesToRemove, rolesToAdd) => {
+    return {};
   }
 
   require = (...roles) => (req: Request, res: Response, next: NextFunction) => {
@@ -246,21 +239,6 @@ class AuthDev implements Auth {
     };
 
     const generateSessionTokenDev = async () => {
-      if (!impersonating) {
-        const usuario = await Usuario.findOne({
-          where: { id: userUuid },
-          include: [{
-            model: Membro,
-            as: 'associacoes',
-            attributes: ['participanteId']
-          }]
-        });
-
-        if (!usuario) {
-          throw new Exceptions.UserNotFoundException();
-        }
-      }
-
       const payload = {
         participante,
         participanteNome: '',
@@ -321,7 +299,8 @@ class AuthDev implements Auth {
       return Promise.all([
         usuario.update(
           { roles: usuario.roles },
-          { transaction }),
+          { transaction }
+        ),
         Membro.create(
           {
             usuarioId: usuario.id,
@@ -329,7 +308,7 @@ class AuthDev implements Auth {
           },
           { transaction }
         ),
-        this.changeUserRoles(usuario.id, [], convite.roles),
+        this.changeUserRoles(usuario.id, [], convite.roles)
       ])
         .then(() => false);
     };
