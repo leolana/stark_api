@@ -243,13 +243,7 @@ class UsuariosController implements Controller {
         ativo: true
       });
 
-      const oldRoles = user.roles;
-      const newRoles = req.body.roles;
-
-      const rolesToRemove = oldRoles.filter(r => !newRoles.includes(r));
-      const rolesToAdd = newRoles.filter(r => !oldRoles.includes(r));
-
-      await this.auth.changeUserRoles(userId, rolesToRemove, rolesToAdd);
+      // todo: trocar roles? no membro
 
       res.end();
     } catch (error) {

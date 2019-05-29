@@ -29,7 +29,7 @@ const checkMembershipsUseCase = async (emails: string[]) => {
       email: user.email,
       userId: user.id,
       memberId: membro.participanteId,
-      roles: user.roles,
+      roles: membro.roles,
     }));
   });
 

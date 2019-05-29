@@ -29,8 +29,7 @@ const recreateUserKeycloakUseCase = (
       id: oldId,
       username: user.email,
       email: user.email,
-      name: user.nome,
-      roles: user.roles
+      name: user.nome
     });
 
     await Usuario.update(

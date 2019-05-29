@@ -38,7 +38,7 @@ const listUsersUseCase = async (participanteId: number, filter: any, datatableOp
     nome: user.nome,
     email: user.email,
     celular: user.celular,
-    roles: user.roles,
+    roles: user.associacoes.flatMap(membro => membro.roles),
     ativo: user.ativo,
   }));
 

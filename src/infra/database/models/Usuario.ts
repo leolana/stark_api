@@ -1,7 +1,5 @@
 // tslint:disable:no-magic-numbers
-import { Table, Model, Column, DataType, HasMany, PrimaryKey, AllowNull, Is, Default } from 'sequelize-typescript';
-import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
-import { rolesEnum } from '../../../domain/services/auth/rolesEnum';
+import { Table, Model, Column, DataType, HasMany, PrimaryKey, AllowNull, Default } from 'sequelize-typescript';
 import { Membro } from './Membro';
 
 @Table({
@@ -34,11 +32,6 @@ export class Usuario extends Model<Usuario> {
   @Column(DataType.STRING(18))
   documento: string;
 
-  @Is('knownRoles', knownRolesValidation)
-  @AllowNull(false)
-  @Column(DataType.ARRAY(DataType.STRING(50)))
-  roles: string[];
-
   @AllowNull(false)
   @Default(true)
   @Column(DataType.BOOLEAN)
@@ -47,12 +40,4 @@ export class Usuario extends Model<Usuario> {
   @HasMany(() => Membro)
   associacoes: Membro[];
 
-}
-
-function knownRolesValidation(value: string[]) {
-  const roles = Object.values(rolesEnum);
-
-  if (value.some(v => !roles.includes(v))) {
-    throw new Exceptions.InvalidSentDataException();
-  }
 }

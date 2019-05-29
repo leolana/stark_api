@@ -33,7 +33,7 @@ const listUserFromIdUseCase = async (idUsuario: string) => {
     celular: user.celular,
     documento: user.documento,
     username: user.username,
-    roles: user.roles,
+    roles: user.associacoes.flatMap(membro => membro.roles),
     ativo: user.ativo,
     associacoes: user.associacoes,
   };
