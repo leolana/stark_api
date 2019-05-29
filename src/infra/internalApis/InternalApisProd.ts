@@ -3,7 +3,7 @@ import { injectable, inject } from 'inversify';
 
 import InternalApis from './InternalApis';
 import { Environment, InternalApiEnv } from '../environment/Environment';
-import { CepNotFoundException } from '../../interfaces/rest/exceptions/ApiExceptions';
+import * as Exceptions from '../../interfaces/rest/exceptions/ApiExceptions';
 
 import types from '../../constants/types';
 
@@ -30,7 +30,7 @@ class InternalApisProd implements InternalApis {
     return request({ uri: `${this.settings.addressCEPs}/${cep}` })
       .then(result => JSON.parse(result))
       .catch((error) => {
-        throw new CepNotFoundException();
+        throw new Exceptions.CepNotFoundException();
       });
   }
 }

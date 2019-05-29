@@ -102,6 +102,12 @@ export class MultipleUsersFoundException extends Errors.PreconditionFailedError 
   }
 }
 
+export class CepNotFoundException extends Errors.NotFoundError {
+  constructor() {
+    super('cep-not-found');
+  }
+}
+
 export class KeycloakUserNotFoundException extends Errors.NotFoundError {
   constructor() {
     super('usuario-keycloak-not-found');
