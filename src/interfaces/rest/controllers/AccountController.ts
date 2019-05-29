@@ -1,7 +1,6 @@
 import { Router, Response, NextFunction } from 'express';
 import { Request } from 'express-request';
 import { injectable, inject } from 'inversify';
-import { Sequelize } from 'sequelize-database';
 
 import Controller from '../Controller';
 import Auth from '../../../infra/auth/Auth';
@@ -14,6 +13,8 @@ import { Environment } from '../../../infra/environment/Environment';
 import types from '../../../constants/types';
 import * as Exceptions from '../exceptions/ApiExceptions';
 
+import { Usuario, Membro, UsuarioSolicitacaoSenha } from '../../../infra/database';
+
 @injectable()
 class AccountController implements Controller {
   auth: Auth;
@@ -21,7 +22,6 @@ class AccountController implements Controller {
   accountUseCases: AccountUseCases;
 
   constructor(
-    @inject(types.Database) private db: Sequelize,
     @inject(types.Environment) private config: Environment,
     @inject(types.Logger) private logger: LoggerInterface,
 
@@ -32,7 +32,6 @@ class AccountController implements Controller {
     this.mailer = mailer();
 
     this.accountUseCases = getAccountUseCases(
-      this.db,
       this.mailer,
       this.mailer.emailTemplates,
       this.config.mailer,
@@ -90,26 +89,19 @@ class AccountController implements Controller {
     try {
       email = req.body.email;
 
-      const usuario = await this.db.entities.usuario.findOne({
+      const usuario = await Usuario.findOne({
         where: { email },
         include: [
           {
-            model: this.db.entities.membro,
+            model: Membro,
             as: 'associacoes',
-            include: [
-              {
-                model: this.db.entities.participante,
-                as: 'participante',
-                attributes: ['id', 'nome']
-              }
-            ]
+            required: true
           }
         ]
       });
 
-      const associacoes = usuario ? usuario.associacoes : [];
-      const participantes = (associacoes || []).map((membro: any) => membro.participante.dataValues);
-      res.send(participantes);
+      const membros = usuario ? usuario.associacoes : [];
+      res.send(membros);
 
     } catch (error) {
       this.logger.info(`Não foi possível buscar os memberships do usuário "${email}".`);
@@ -173,18 +165,8 @@ class AccountController implements Controller {
 
   initiateSessionGateway = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const participante = await this.db.entities.participante.findOne({
-        where: {
-          documento: req.body.cnpjFornecedor
-        }
-      });
-
-      if (!participante) {
-        throw new Exceptions.ProviderNotFoundException();
-      }
-
-      const userEmail = req.user.email;
-      const idParticipante = +participante.id;
+      const userEmail = req.body.email;
+      const idParticipante = req.body.participanteId;
 
       const tokens = await this.auth.generateSessionToken(
         userEmail,
@@ -217,86 +199,77 @@ class AccountController implements Controller {
   }
 
   changePassword = async (req: Request, res: Response, next: NextFunction) => {
-    const findUsuario = () => this.db.entities.usuario.findOne({
-      where: {
-        email: req.body.email,
-      },
-    });
-
-    return findUsuario()
-      .then((usuario) => {
-        if (!usuario) {
-          throw new Exceptions.UserNotFoundException();
+    try {
+      const usuario = await Usuario.findOne({
+        where: {
+          email: req.body.email
         }
+      });
 
-        return this.auth.changeUserPassword(usuario);
-      })
-      .then(() => res.end())
-      .catch(next);
+      if (!usuario) {
+        throw new Exceptions.UserNotFoundException();
+      }
+
+      await this.auth.changeUserPassword(usuario);
+
+      res.end();
+
+    } catch (error) {
+      next(error);
+    }
   }
 
   recoverPassword = async (req: Request, res: Response, next: NextFunction) => {
-    const { email } = req.body;
+    try {
+      const { email } = req.body;
 
-    return this.accountUseCases
-      .recoverPass(email)
-      .then((ok) => {
-        if (!ok) {
-          return this.accountUseCases.resendInvite(email);
-        }
-        return true;
-      })
-      .then(() => res.end())
-      .catch(next);
+      const ok = await this.accountUseCases.recoverPass(email);
+      if (!ok) {
+        await this.accountUseCases.resendInvite(email);
+      }
+
+      res.end();
+
+    } catch (error) {
+      next(error);
+    }
   }
 
   resetPassword = async (req: Request, res: Response, next: NextFunction) => {
-    const { codigo, email } = req.body;
+    try {
+      const { codigo, email } = req.body;
 
-    const findUsuario = () => {
-      const where = {
-        email,
-      };
-      return this.db.entities.usuario.findOne({ where });
-    };
+      const solicitacao = await UsuarioSolicitacaoSenha.findOne({
+        where: <any>{
+          codigo,
+          email,
+          expiraEm: {
+            $gt: new Date()
+          }
+        }
+      });
 
-    const findUsuarioSolicitacaoSenha = () => {
-      const where = {
-        codigo,
-        email,
-        expiraEm: {
-          $gt: new Date(),
-        },
-      };
-      return this.db.entities.usuarioSolicitacaoSenha.findOne({ where });
-    };
-
-    const action = (results) => {
-      const solicitacao = results[0];
       if (!solicitacao) {
-        throw new Error('solicitacao-invalida');
+        throw new Exceptions.InvalidUserPasswordSolicitationException();
       }
 
-      const usuario = results[1];
+      const usuario = Usuario.findOne({
+        where: {
+          email
+        }
+      });
+
       if (!usuario) {
-        throw new Error('usuario-not-found');
+        throw new Exceptions.UserNotFoundException();
       }
 
-      req.body.id = usuario.id;
+      await this.auth.changeUserPassword(usuario);
+      solicitacao.destroy();
+      res.end();
 
-      return this.auth
-        .changeUserPassword(req.body)
-        .then(() => solicitacao.destroy());
-    };
-
-    return Promise
-      .all([
-        findUsuarioSolicitacaoSenha(),
-        findUsuario(),
-      ])
-      .then(action)
-      .then(() => res.end())
-      .catch(next);
+    } catch (error) {
+      next(error);
+    }
   }
 
   impersonate = async (req: Request, res: Response, next: NextFunction) => {

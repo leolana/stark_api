@@ -1,15 +1,19 @@
-import { Sequelize } from 'sequelize-database';
 import usuarioNotificacaoEnum from '../../../domain/services/notificacoes/usuarioNotificacaoEnum';
+import { UsuarioNotificacao } from '../../../infra/database';
 
-const updateNonReadUseCase = (db: Sequelize) => async (notifications: any[]) => {
+const updateNonReadUseCase = async (notifications: any[]) => {
   if (!notifications || !notifications.length) {
     return;
   }
 
   const ids = notifications.map(n => n.id);
 
-  await db.entities.usuarioNotificacao.update({ status: usuarioNotificacaoEnum.lido }, {
-    where: { notificacaoId: { $in: ids } },
+  await UsuarioNotificacao.update({ status: usuarioNotificacaoEnum.lido }, {
+    where: {
+      notificacaoId: {
+        $in: ids
+      }
+    },
   });
 };
 

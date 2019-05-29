@@ -1,29 +1,22 @@
-import { Sequelize } from 'sequelize-database';
 import { DateTime } from 'luxon';
+import { Usuario, Membro, UsuarioConvite } from '../../../infra/database';
 
-const checkMembershipsUseCase = (db: Sequelize) => async (emails: string[]) => {
-  const users = await db.entities.usuario.findAll({
+const checkMembershipsUseCase = async (emails: string[]) => {
+  const users = await Usuario.findAll({
     where: { email: emails },
     attributes: ['id', 'email', 'roles'],
     include: [
       {
-        model: db.entities.membro,
+        model: Membro,
         attributes: ['participanteId'],
-        as: 'associacoes',
-        include: [
-          {
-            model: db.entities.participante,
-            as: 'participante',
-            attributes: ['id', 'nome'],
-          },
-        ],
-      },
-    ],
+        as: 'associacoes'
+      }
+    ]
   });
 
   const today = DateTime.local().toSQLDate();
 
-  const convites = await db.entities.usuarioConvite.findAll({
+  const convites = await UsuarioConvite.findAll({
     attributes: ['email', 'roles'],
     where: {
       email: emails,
@@ -33,16 +26,16 @@ const checkMembershipsUseCase = (db: Sequelize) => async (emails: string[]) => {
 
   const memberships = users.map((user) => {
     return user.associacoes.map(membro => ({
-      ...membro.participante.dataValues,
       email: user.email,
       userId: user.id,
       memberId: membro.participanteId,
-      roles: user.roles,
+      roles: membro.roles,
     }));
   });
 
   return {
-    convites, memberships
+    convites,
+    memberships
   };
 
 };

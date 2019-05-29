@@ -1,15 +1,14 @@
 import AuthProd from '../../../infra/auth/AuthProd';
-import termoTipo from '../../../domain/entities/termoTipo';
-import { DateTime } from 'luxon';
 import * as jwt from 'jsonwebtoken';
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
+import { Membro, Usuario } from '../../../infra/database';
 
 const generateSessionTokenUseCase = (auth: AuthProd) =>
 
   async (userUuid: string, idParticipante: number, impersonate = false) => {
     if (!impersonate) {
       const membroInclude: any = {
-        model: auth.db.entities.membro,
+        model: Membro,
         as: 'associacoes',
         attributes: ['participanteId']
       };
@@ -19,7 +18,7 @@ const generateSessionTokenUseCase = (auth: AuthProd) =>
         membroInclude.required = true;
       }
 
-      const usuario = await auth.db.entities.usuario.findOne({
+      const usuario = await Usuario.findOne({
         where: { id: userUuid },
         include: [membroInclude]
       });
@@ -38,26 +37,10 @@ const generateSessionTokenUseCase = (auth: AuthProd) =>
     };
 
     if (idParticipante) {
-      const [participante, countEstabelecimentos, countFornecedores] = await Promise.all(
-        [
-          auth.db.entities.participante.findOne({
-            where: {
-              id: idParticipante
-            },
-            attributes: ['nome']
-          }),
-          auth.db.entities.participanteEstabelecimento.count({
-            where: {
-              participanteId: idParticipante
-            }
-          }),
-          auth.db.entities.participanteFornecedor.count({
-            where: {
-              participanteId: idParticipante
-            }
-          })
-        ]
-      );
+      // todo: pegar participante.nome e se eh estabelecimento/fornecedor
+      const participante = { nome: undefined };
+      const countEstabelecimentos = 0;
+      const countFornecedores = 0;
 
       payload.participanteNome = participante.nome;
       payload.participanteEstabelecimento = countEstabelecimentos > 0;
@@ -65,33 +48,9 @@ const generateSessionTokenUseCase = (auth: AuthProd) =>
     }
 
     if (!impersonate) {
-      const termo = await auth.db.entities.termo.findOne({
-        where: {
-          inicio: {
-            $lte: DateTime.local().startOf('day').toSQLDate()
-          },
-          fim: {
-            $or: {
-              $eq: null,
-              $gt: DateTime.local().toSQLDate()
-            }
-          },
-          tipo: payload.participanteEstabelecimento
-            ? termoTipo.contratoMaeEstabelecimento
-            : termoTipo.contratoMaeFornecedor
-        },
-        include: [
-          {
-            model: auth.db.entities.participanteAceiteTermo,
-            as: 'aceites',
-            where: {
-              participanteId: idParticipante
-            }
-          }
-        ],
-      });
-
-      payload.acceptedTerms = !!termo;
+      // todo: conferir termos
+      const acceptedTerms = true;
+      payload.acceptedTerms = acceptedTerms;
     }
 
     const result = {

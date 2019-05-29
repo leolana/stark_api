@@ -1,4 +1,3 @@
-import { Sequelize } from 'sequelize-database';
 import { Mailer } from '../../../infra/mailer';
 import { Auth } from '../../../infra/auth';
 import { LoggerInterface } from '../../../infra/logging';
@@ -13,15 +12,14 @@ import checkMembershipsUseCase from './checkMembershipsUseCase';
 
 export interface AccountUseCases {
   signin?: ReturnType<typeof signinUseCase>;
-  deleteInvite?: ReturnType<typeof deleteInvite>;
+  deleteInvite?: typeof deleteInvite;
   resendInvite?: ReturnType<typeof resendInvite>;
   recoverPass?: ReturnType<typeof recoverPass>;
-  createMembershipUseCase?: ReturnType<typeof createMembershipUseCase>;
-  checkMembershipsUseCase?: ReturnType<typeof checkMembershipsUseCase>;
+  createMembershipUseCase?: typeof createMembershipUseCase;
+  checkMembershipsUseCase?: typeof checkMembershipsUseCase;
 }
 
 export function getAccountUseCases(
-  db: Sequelize,
   mailer: Mailer,
   emailTemplates: any,
   settings: MailerEnv,
@@ -30,12 +28,12 @@ export function getAccountUseCases(
 ) {
   const usecases: AccountUseCases = {};
 
-  usecases.signin = signinUseCase(db, auth, logger);
-  usecases.deleteInvite = deleteInvite(db);
-  usecases.resendInvite = resendInvite(db, mailer, emailTemplates, settings);
-  usecases.recoverPass = recoverPass(db, auth);
-  usecases.createMembershipUseCase = createMembershipUseCase(db);
-  usecases.checkMembershipsUseCase = checkMembershipsUseCase(db);
+  usecases.signin = signinUseCase(auth, logger);
+  usecases.deleteInvite = deleteInvite;
+  usecases.resendInvite = resendInvite(logger, mailer, emailTemplates, settings);
+  usecases.recoverPass = recoverPass(auth);
+  usecases.createMembershipUseCase = createMembershipUseCase;
+  usecases.checkMembershipsUseCase = checkMembershipsUseCase;
 
   return usecases;
 }

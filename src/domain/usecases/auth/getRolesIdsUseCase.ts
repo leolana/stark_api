@@ -15,7 +15,7 @@ const getRolesIdsUseCase = (auth: AuthProd) =>
       json: true,
     });
 
-    roles.forEach((role) => {
+    roles.forEach((role: any) => {
       auth.rolesIds[role.name] = role.id;
     });
 

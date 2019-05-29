@@ -1,36 +1,36 @@
-import { Sequelize } from 'sequelize-database';
+import { Usuario, Notificacao, NotificacaoCategoria, UsuarioNotificacao } from '../../../infra/database';
 
-const getNotificationUseCase = (db: Sequelize) => (page, limit, userObj) => {
+const getNotificationUseCase = async (page: number, limit: number, userObj: { email: string }) => {
 
-  const findUser = user => db.entities.usuario.findOne({
+  const user = await Usuario.findOne({
     attributes: ['id'],
-    where: { email: user.email }
+    where: {
+      email: userObj.email
+    }
   });
 
-  const find = (userID) => {
-    if (!userID) return null;
-    return db.entities.notificacao
-      .findAll({
-        limit,
-        order: [['createdAt', 'DESC']],
-        offset: page,
-        include: [
-          {
-            model: db.entities.notificacaoCategoria,
-            where: { ativo: true },
-          },
-          {
-            model: db.entities.usuarioNotificacao,
-            where: { usuarioId: userID.id },
-            as: 'usuarioNotificacao'
-          },
-        ]
-      });
-  };
+  if (!user) {
+    return null;
+  }
 
-  return findUser(userObj)
-    .then(find);
+  const notificacoes = await Notificacao.findAll({
+    limit,
+    order: [['createdAt', 'DESC']],
+    offset: page,
+    include: [
+      {
+        model: NotificacaoCategoria,
+        where: { ativo: true },
+      },
+      {
+        model: UsuarioNotificacao,
+        where: { usuarioId: user.id },
+        as: 'usuarioNotificacao'
+      },
+    ]
+  });
 
+  return (notificacoes);
 };
 
 export default getNotificationUseCase;

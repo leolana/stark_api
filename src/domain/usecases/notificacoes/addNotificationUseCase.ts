@@ -1,9 +1,8 @@
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
-import { Sequelize } from 'sequelize-database';
 import usuarioNotificacaoEnum from '../../../domain/services/notificacoes/usuarioNotificacaoEnum';
-import { getTipoDocumento, getSiglaParticipante } from '../../../domain/services/participante/personTypeEnum';
+import { Usuario, NotificacaoCategoria, Notificacao, UsuarioNotificacao } from '../../../infra/database';
 
-const addNotificationUseCase = (db: Sequelize) => async (
+const addNotificationUseCase = async (
   data: any,
   role: string[],
   userEmail: string,
@@ -17,26 +16,7 @@ const addNotificationUseCase = (db: Sequelize) => async (
     throw new Exceptions.UserNotFoundException();
   }
 
-  if (participanteId) {
-    const participante = await db.entities.participante
-      .findOne({ where: { id: participanteId } });
-
-    if (!participante) {
-      throw new Exceptions.ParticipanteNotFoundException();
-    }
-
-    const ehFornecedor = await db.entities.participanteFornecedor
-      .findOne({ where: { participanteId } });
-    const tipoDocumento = getTipoDocumento(participante.documento);
-
-    const tipoParticipante = ehFornecedor ? 'Fornecedor' : 'Estabelecimento';
-    const tipoSigla = getSiglaParticipante(ehFornecedor);
-
-    data.mensagem = `O ${tipoParticipante} ${participante.nome} (${tipoSigla}: ${participanteId} /
-     ${tipoDocumento}: ${participante.documento}) integrou-se.`;
-  }
-
-  const usuarios = await db.entities.usuario.findAll({
+  const usuarios = await Usuario.findAll({
     attributes: ['id', 'email'],
     where: { roles: { $overlap: role }, ativo: true }
   },
@@ -53,12 +33,14 @@ const addNotificationUseCase = (db: Sequelize) => async (
     criadorId: criador.id,
     usuarioNotificacao: {
       status: u.email === userEmail ? usuarioNotificacaoEnum.lido : usuarioNotificacaoEnum.naoLido,
-      usuarioId: u.id,
+      usuarioId: u.id
     }
   }));
 
-  const notificacaoCategoria = await db.entities.notificacaoCategoria.findOne({
-    where: { id: data.categoriaId },
+  const notificacaoCategoria = await NotificacaoCategoria.findOne({
+    where: {
+      id: data.categoriaId
+    }
   });
 
   if (!notificacaoCategoria) {
@@ -66,13 +48,13 @@ const addNotificationUseCase = (db: Sequelize) => async (
   }
 
   const promises = notifications.map((n) => {
-    return db.entities.notificacao.create(n, {
+    return Notificacao.create(n, {
       include: [
         {
-          model: db.entities.usuarioNotificacao,
-          as: 'usuarioNotificacao',
+          model: UsuarioNotificacao,
+          as: 'usuarioNotificacao'
         }
-      ],
+      ]
     });
   });
   await Promise.all(promises);

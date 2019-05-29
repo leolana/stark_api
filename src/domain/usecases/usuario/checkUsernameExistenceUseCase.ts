@@ -1,12 +1,25 @@
-import { Sequelize } from 'sequelize-database';
+import { Usuario } from '../../../infra/database';
 
-const checkUsernameExistenceUseCase = (db: Sequelize) => async (idUsuario, username) => {
-  if (!username) return null;
-  const where: any = { username };
-  if (idUsuario !== 'null') where.id = { $ne: idUsuario };
+const checkUsernameExistenceUseCase = async (idUsuario: number, username: string) => {
+  if (!username) {
+    return null;
+  }
 
-  return db.entities.usuario.findAll({ where });
+  const where: any = {
+    username
+  };
 
+  if (idUsuario) {
+    where.id = {
+      $ne: idUsuario
+    };
+  }
+
+  const users = await Usuario.findAll({
+    where
+  });
+
+  return (users);
 };
 
 export default checkUsernameExistenceUseCase;

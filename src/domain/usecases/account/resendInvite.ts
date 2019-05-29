@@ -1,52 +1,44 @@
-import { paramsEnum as accountParams } from '../../services/account/paramsEnum';
+import paramsEnum from '../../../domain/services/account/paramsEnum';
 import { MailerEnv } from '../../../infra/environment/Environment';
-import { Sequelize } from 'sequelize-database';
 import { Mailer } from '../../../infra/mailer';
+import { UsuarioConvite } from '../../../infra/database';
+import { LoggerInterface } from '../../../infra/logging';
+import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
+import { DateTime } from 'luxon';
 
-const resendInvite = (db: Sequelize, mailer: Mailer, emailTemplates: any, settings: MailerEnv) => (
+const resendInvite = (logger: LoggerInterface, mailer: Mailer, emailTemplates: any, settings: MailerEnv) => async (
   userEmail: string
 ) => {
-  const findInvite = () => {
-    const where = { email: userEmail };
 
-    const checkInvite = (invite) => {
-      if (!invite) {
-        throw new Error('invite-not-found');
-      }
-      return invite;
-    };
+  const invite = await UsuarioConvite.findOne({
+    where: {
+      email: userEmail
+    }
+  });
 
-    return db.entities.usuarioConvite
-      .findOne({ where })
-      .then(checkInvite);
+  if (!invite) {
+    throw new Exceptions.InviteNotFoundException();
+  }
+
+  invite.expiraEm = DateTime.local()
+    .plus({ days: paramsEnum.prazoExpiracaoConviteEmDias })
+    .toUTC().toJSDate();
+
+  await invite.save();
+
+  const inviteConfig = {
+    templateName: emailTemplates.DEFINIR_SENHA,
+    destinatary: invite.email,
+    substitutions: {
+      loginAcesso: invite.email,
+      linkRedefinirSenha: `${settings.baseUrl}/registrar/${invite.email}/${invite.codigo}`
+    }
   };
 
-  const updateExpirationDate = (invite) => {
-    const now = new Date();
-    invite.expiraEm = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() + accountParams.prazoExpiracaoConviteEmDias
-    );
-    return invite.save();
-  };
+  mailer.enviar(inviteConfig).catch((error) => {
+    logger.error(error);
+  });
 
-  const sendInvite = (invite) => {
-    const inviteConfig = {
-      templateName: emailTemplates.DEFINIR_SENHA,
-      destinatary: invite.email,
-      substitutions: {
-        loginAcesso: invite.email,
-        linkRedefinirSenha: `${settings.baseUrl}/registrar/`
-          + `${invite.email}/${invite.codigo}`,
-      },
-    };
-    return mailer.enviar(inviteConfig);
-  };
-
-  return findInvite()
-    .then(updateExpirationDate)
-    .then(sendInvite);
 };
 
 export default resendInvite;

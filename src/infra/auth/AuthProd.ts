@@ -1,5 +1,4 @@
 import * as request from 'request-promise-native';
-import { Sequelize } from 'sequelize-database';
 import { injectable, inject } from 'inversify';
 import { Environment, AuthEnv } from '../environment/Environment';
 import { LoggerInterface } from '../logging';
@@ -44,7 +43,6 @@ class AuthProd implements Auth {
   request = request;
 
   constructor(
-    @inject(types.Database) public db: Sequelize,
     @inject(types.Logger) public logger: LoggerInterface,
     @inject(types.Environment) config: Environment,
     @inject(types.MailerFactory) mailer: () => Mailer,

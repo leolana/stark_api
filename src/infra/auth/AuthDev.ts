@@ -1,16 +1,12 @@
-// tslint:disable:no-shadowed-variable
-
 import { injectable, inject } from 'inversify';
 import * as jwt from 'jsonwebtoken';
 import { Response, NextFunction } from 'express';
 import { Request } from 'express-request';
 import * as chance from 'chance';
 
-import termoTipo from '../../domain/entities/termoTipo';
 import { rolesEnum } from '../../domain/services/auth/rolesEnum';
-import { Sequelize } from 'sequelize-database';
 import Auth from './Auth';
-import { paramsEnum as accountParams } from '../../domain/services/account/paramsEnum';
+import paramsEnum from '../../domain/services/account/paramsEnum';
 import { typeEnum as tiposParticipante } from '../../domain/services/participante/typeEnum';
 import { Environment, AuthEnv } from '../environment/Environment';
 import * as Exceptions from '../../interfaces/rest/exceptions/ApiExceptions';
@@ -18,11 +14,10 @@ import { Mailer } from '../mailer';
 import { KeycloakUserRepresentation } from './AuthTypes';
 
 import types from '../../constants/types';
+import { Usuario, Membro, UsuarioConvite } from '../database';
 
 @injectable()
 class AuthDev implements Auth {
-  addRoleKc: (email: any, roles: any, pwd: any) => {};
-  private db: Sequelize;
   private mailer: Mailer;
   private emailTemplates: any;
   private settings: AuthEnv;
@@ -54,8 +49,10 @@ class AuthDev implements Auth {
     resource_access: {},
   };
 
+  addRoleKc: (email: any, roles: any, pwd: any) => {};
+
   private retorno = (user, resolve, reject) => {
-    return jwt.sign(
+    jwt.sign(
       user.sessionPayload,
       this.settings.clientSecret,
       { expiresIn: '24h' },
@@ -67,11 +64,9 @@ class AuthDev implements Auth {
   }
 
   constructor(
-    @inject(types.Database) db: Sequelize,
     @inject(types.Environment) config: Environment,
     @inject(types.MailerFactory) mailer: () => Mailer,
   ) {
-    this.db = db;
     this.mailer = mailer();
     this.emailTemplates = this.mailer.emailTemplates;
     this.settings = config.auth;
@@ -109,22 +104,15 @@ class AuthDev implements Auth {
   }
 
   getUserRoles = (req: Request): rolesEnum[] => {
-    return req.user.resource_access[this.settings.clientId].roles;
+    return [];
   }
 
   hasPermission = (req: Request, ...accessRoles: rolesEnum[]): boolean => {
-    const userRoles = this.getUserRoles(req);
-
-    const isSuper = userRoles.includes(rolesEnum.super);
-    if (isSuper) {
-      return true;
-    }
-
-    return userRoles.some(r => accessRoles.includes(r));
+    return true;
   }
 
-  changeUserRoles = (userId, rolesToRemove, rolesToAdd) => {
-    return Promise.resolve({});
+  changeUserRoles = async (userId, rolesToRemove, rolesToAdd) => {
+    return {};
   }
 
   require = (...roles) => (req: Request, res: Response, next: NextFunction) => {
@@ -188,79 +176,37 @@ class AuthDev implements Auth {
     };
   }
 
-  authenticate = (userUuid, pass): Promise<any> => {
-    return new Promise((resolve, reject) => {
-      const user = Object.values(this.users).find(u => u.kcPayload.preferred_username === userUuid);
+  authenticate = async (userUuid: string, pass: string) => {
+    const user = Object.values(this.users).find(u => u.kcPayload.preferred_username === userUuid);
 
-      if (!user) {
-        reject(new Exceptions.UserNotFoundException());
-        return;
-      }
+    if (!user) {
+      throw new Exceptions.UserNotFoundException();
+    }
 
-      const now = new Date();
-      const today = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-      );
+    // todo: ver se os termos estão aceitos
+    user.sessionPayload.acceptedTerms = true;
 
-      this.db.entities.termo
-        .findOne({
-          where: {
-            inicio: { $lte: today },
-            fim: {
-              $or: {
-                $eq: null,
-                $gt: now,
-              },
-            },
-            tipo: user.sessionPayload.participanteEstabelecimento
-              ? termoTipo.contratoMaeEstabelecimento
-              : termoTipo.contratoMaeFornecedor,
+    const tokens = await <Promise<[string, string]>>Promise.all([
+      new Promise((resolve, reject) => {
+        jwt.sign(
+          user.kcPayload,
+          this.settings.publicKey,
+          { expiresIn: '24h' },
+          (error, token) => {
+            if (error) reject(error);
+            else resolve(token);
           },
-          include: [
-            {
-              model: this.db.entities.participanteAceiteTermo,
-              as: 'aceites',
-              where: {
-                participanteId: user.sessionPayload.participante,
-              },
-            },
-          ],
-        })
-        .then((termo) => {
-          user.sessionPayload.acceptedTerms = !!termo;
-          return user;
-        })
-        .then(() => {
-          const sign = Promise.all([
-            new Promise((resolve, reject) => {
-              return jwt.sign(
-                user.kcPayload,
-                this.settings.publicKey,
-                { expiresIn: '24h' },
-                (error, token) => {
-                  if (error) reject(error);
-                  else resolve(token);
-                },
-              );
-            }),
-            new Promise((resolve, reject) => {
-              this.retorno(user, resolve, reject);
-            }),
-          ]);
+        );
+      }),
+      new Promise((resolve, reject) => {
+        this.retorno(user, resolve, reject);
+      })
+    ]);
 
-          return sign
-            .then((tokens) => {
-              resolve({
-                accessToken: tokens[0],
-                refreshToken: tokens[0],
-                // sessionToken: tokens[1],
-              });
-            })
-            .catch(error => reject(error));
-        });
-    });
+    return {
+      accessToken: tokens[0],
+      refreshToken: tokens[1]
+    };
   }
 
   refreshToken = (refreshToken) => {
@@ -277,126 +223,66 @@ class AuthDev implements Auth {
     console.log('keycloak updateUserStatus', userId, userStatus);
   }
 
-  generateSessionToken = (userUuid, participante, impersonating): Promise<any> => {
-    const getSessionToken = () => {
-      return new Promise((resolve, reject) => {
-        const user = Object.values(this.users).find(u => u.kcPayload.preferred_username === userUuid);
+  generateSessionToken = async (userUuid: string, participante: number, impersonating: boolean) => {
+    const getSessionToken = async () => {
+      const user = Object.values(this.users).find(u => u.kcPayload.preferred_username === userUuid);
 
-        if (!user) {
-          reject(new Exceptions.UserNotFoundException());
-          return Promise.resolve();
-        }
-
-        return new Promise((resolve, reject) => {
-          this.retorno(user, resolve, reject);
-        })
-          .then(token => resolve({ sessionToken: token }));
-      });
-    };
-
-    const generateSessionTokenDev = (userUuid, participante, impersonating) => {
-      let promise = impersonating
-        ? Promise.resolve(participante)
-        : this.db.entities.usuario.findOne({
-          where: { id: userUuid },
-          include: [{
-            model: this.db.entities.membro,
-            as: 'associacoes',
-            attributes: ['participanteId'],
-          }],
-        }).then((usuario) => {
-          if (!usuario) throw new Exceptions.UserNotFoundException();
-
-          const associacao = usuario.associacoes.find(
-            a => a.participanteId === participante
-          );
-
-          return associacao && participante;
-        });
-
-      promise = (promise as Promise<any>).then(participanteId => (!participanteId
-        ? Promise.resolve({})
-        : Promise.all([
-          this.db.entities.participante.findOne({
-            where: { id: participanteId },
-            attributes: ['nome'],
-          }),
-          this.db.entities.participanteEstabelecimento.count({
-            where: { participanteId },
-          }),
-          this.db.entities.participanteFornecedor.count({
-            where: { participanteId },
-          }),
-        ]).then(results => ({
-          participante: participanteId,
-          participanteNome: results[0].nome,
-          participanteEstabelecimento: results[1] > 0,
-          // tslint:disable-next-line:no-magic-numbers
-          participanteFornecedor: results[2] > 0,
-        }))));
-
-      if (!impersonating) {
-        promise = promise.then((result) => {
-          const now = new Date();
-          const today = new Date(
-            now.getFullYear(),
-            now.getMonth(),
-            now.getDate()
-          );
-
-          return this.db.entities.termo.findOne({
-            where: {
-              inicio: { $lte: today },
-              fim: {
-                $or: {
-                  $eq: null,
-                  $gt: now,
-                },
-              },
-              tipo: result.participanteEstabelecimento
-                ? termoTipo.contratoMaeEstabelecimento
-                : termoTipo.contratoMaeFornecedor,
-            },
-            include: [{
-              model: this.db.entities.participanteAceiteTermo,
-              as: 'aceites',
-              where: {
-                participanteId: result.participante,
-              },
-            }],
-          }).then((termo) => {
-            result.acceptedTerms = !!termo;
-
-            return result;
-          });
-        });
+      if (!user) {
+        throw new Exceptions.UserNotFoundException();
       }
 
-      return promise.then(payload => new Promise((resolve, reject) => {
+      const token = await new Promise((resolve, reject) => {
+        this.retorno(user, resolve, reject);
+      });
+
+      return (token);
+    };
+
+    const generateSessionTokenDev = async () => {
+      const payload = {
+        participante,
+        participanteNome: '',
+        participanteEstabelecimento: false,
+        participanteFornecedor: false,
+      };
+
+      return await new Promise((resolve, reject) => {
         jwt.sign(
           payload,
           this.settings.clientSecret,
           { expiresIn: '24h' },
           (error, token) => {
             if (error) reject(error);
-            else resolve({ sessionToken: token });
+            else resolve(token);
           }
         );
-      }));
+      });
     };
 
-    return impersonating
-      ? generateSessionTokenDev(userUuid, participante, impersonating)
-      : getSessionToken();
+    let sessionToken: any;
+
+    if (impersonating) {
+      sessionToken = await generateSessionTokenDev();
+    } else {
+      sessionToken = await getSessionToken();
+    }
+
+    return {
+      sessionToken
+    };
   }
 
   inviteUser = (convite, transaction) => {
-    const findUser = () => this.db.entities.usuario.findOne({
-      where: { email: convite.email },
-      include: [{
-        model: this.db.entities.membro,
-        as: 'associacoes',
-      }],
+    const findUser = () => Usuario.findOne({
+      where: {
+        email: convite.email
+      },
+      include: [
+        {
+          model: Membro,
+          as: 'associacoes'
+        }
+      ]
     });
 
     const checaUsuarioMembro = (usuario) => {
@@ -413,15 +299,16 @@ class AuthDev implements Auth {
       return Promise.all([
         usuario.update(
           { roles: usuario.roles },
-          { transaction }),
-        this.db.entities.membro.create(
+          { transaction }
+        ),
+        Membro.create(
           {
             usuarioId: usuario.id,
             participanteId: convite.participante,
           },
           { transaction }
         ),
-        this.changeUserRoles(usuario.id, [], convite.roles),
+        this.changeUserRoles(usuario.id, [], convite.roles)
       ])
         .then(() => false);
     };
@@ -431,11 +318,11 @@ class AuthDev implements Auth {
 
       const dataExpiracao = new Date();
       dataExpiracao.setDate(dataExpiracao.getDate()
-        + accountParams.prazoExpiracaoConviteEmDias);
+        + paramsEnum.prazoExpiracaoConviteEmDias);
 
       convite.expiraEm = dataExpiracao;
 
-      return this.db.entities.usuarioConvite
+      return UsuarioConvite
         .create(convite, { transaction })
         .then(novoConvite => this.mailer.enviar(
           {
@@ -469,7 +356,7 @@ class AuthDev implements Auth {
   }
 
   getInfoUser = async (userId: string): Promise<KeycloakUserRepresentation> => {
-    return await this.db.entities.usuario.findByPk(userId);
+    return await Usuario.findByPk(userId);
   }
 
   putUser = async (user: KeycloakUserRepresentation): Promise<void> => {

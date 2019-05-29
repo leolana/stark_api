@@ -1,11 +1,10 @@
 import sequelize = require('sequelize');
-import { Sequelize } from 'sequelize-database';
 import { Auth } from '../../../infra/auth';
 import { LoggerInterface } from '../../../infra/logging';
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
+import { Usuario } from '../../../infra/database';
 
 const signinUseCase = (
-  db: Sequelize,
   auth: Auth,
   logger: LoggerInterface
 ) =>
@@ -21,12 +20,25 @@ const signinUseCase = (
     password: string
   ) => {
     try {
-      const usuarios = (await db.entities.usuario.findAll({
-        where: [sequelize.or(
-          { email },
-          { documento }
-        )]
-      })).map(u => u.dataValues);
+      let usuarios: Usuario[] = [];
+
+      if (email) {
+        usuarios = await Usuario.findAll({
+          where: sequelize.or(
+            { email }
+          )
+        });
+      }
+
+      if (!usuarios.length && documento) {
+        usuarios = await Usuario.findAll({
+          where: sequelize.or(
+            { documento }
+          )
+        });
+      }
+
+      usuarios = usuarios.map((user: any) => user.dataValues);
 
       if (usuarios.length > 1) {
         throw new Exceptions.MultipleUsersFoundException();

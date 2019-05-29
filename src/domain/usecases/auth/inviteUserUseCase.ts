@@ -1,16 +1,17 @@
 import AuthProd from '../../../infra/auth/AuthProd';
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
-import { paramsEnum as accountParams } from '../../services/account/paramsEnum';
+import { Usuario, Membro, UsuarioConvite } from '../../../infra/database';
+import paramsEnum from '../../../domain/services/account/paramsEnum';
 
 const inviteUserUseCase = (auth: AuthProd) =>
 
   (convite, transaction) => {
-    const findUser = () => auth.db.entities.usuario.findOne({
+    const findUser = () => Usuario.findOne({
       where: { email: convite.email },
       include: [{
-        model: auth.db.entities.membro,
-        as: 'associacoes',
-      }],
+        model: Membro,
+        as: 'associacoes'
+      }]
     });
 
     const checaUsuarioMembro = (usuario) => {
@@ -28,7 +29,7 @@ const inviteUserUseCase = (auth: AuthProd) =>
         usuario.update(
           { roles: usuario.roles },
           { transaction }),
-        auth.db.entities.membro.create(
+        Membro.create(
           {
             usuarioId: usuario.id,
             participanteId: convite.participante,
@@ -45,11 +46,11 @@ const inviteUserUseCase = (auth: AuthProd) =>
 
       const dataExpiracao = new Date();
       dataExpiracao.setDate(dataExpiracao.getDate()
-        + accountParams.prazoExpiracaoConviteEmDias);
+        + paramsEnum.prazoExpiracaoConviteEmDias);
 
       convite.expiraEm = dataExpiracao;
 
-      return auth.db.entities.usuarioConvite
+      return UsuarioConvite
         .create(convite, { transaction })
         .then(novoConvite => auth.mailer.enviar(
           {

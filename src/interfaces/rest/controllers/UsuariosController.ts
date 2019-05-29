@@ -1,7 +1,7 @@
 import { Router, Response, NextFunction } from 'express';
 import { Request } from 'express-request';
 import { injectable, inject } from 'inversify';
-import { Sequelize } from 'sequelize-database';
+import { Sequelize } from 'sequelize-typescript';
 
 import Controller from '../Controller';
 import Auth from '../../../infra/auth/Auth';
@@ -15,6 +15,7 @@ import { Environment, MailerEnv } from '../../../infra/environment/Environment';
 import types from '../../../constants/types';
 import * as Exceptions from '../exceptions/ApiExceptions';
 import { getDatatableOptionsService } from '../../../domain/services/datatable/getDatatableOptionsService';
+import { Usuario } from '../../../infra/database';
 
 @injectable()
 class UsuariosController implements Controller {
@@ -39,7 +40,6 @@ class UsuariosController implements Controller {
     this.emailTemplates = this.mailer.emailTemplates;
 
     this.accountUseCases = getAccountUseCases(
-      this.db,
       this.mailer,
       this.emailTemplates,
       this.settings,
@@ -226,7 +226,7 @@ class UsuariosController implements Controller {
       await this.verificarPermissao(req);
 
       const userId = req.body.id;
-      const user = await this.db.entities.usuario.findOne({ where: { id: userId } });
+      const user = await Usuario.findOne({ where: { id: userId } });
       if (!user) {
         throw new Exceptions.UserNotFoundException();
       }
@@ -243,13 +243,7 @@ class UsuariosController implements Controller {
         ativo: true
       });
 
-      const oldRoles = user.roles;
-      const newRoles = req.body.roles;
-
-      const rolesToRemove = oldRoles.filter(r => !newRoles.includes(r));
-      const rolesToAdd = newRoles.filter(r => !oldRoles.includes(r));
-
-      await this.auth.changeUserRoles(userId, rolesToRemove, rolesToAdd);
+      // todo: trocar roles? no membro
 
       res.end();
     } catch (error) {

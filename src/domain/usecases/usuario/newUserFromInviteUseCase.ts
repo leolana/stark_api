@@ -1,70 +1,65 @@
 import * as Exceptions from '../../../interfaces/rest/exceptions/ApiExceptions';
-import { Sequelize } from 'sequelize-database';
 import { Auth } from '../../../infra/auth';
+import { UsuarioConvite, Usuario, Membro } from '../../../infra/database';
+import uuid = require('uuid');
 
 const newUserFromInviteUseCase = (
-  db: Sequelize,
   auth: Auth
-) => (codigo: string, email: string, password: string, participantRoles: any[]) => {
+) =>
 
-  const findUserByEmail = () => {
-    return db.entities.usuario.findOne({
-      where: { email }
-    });
-  };
+  async (
+    codigo: string,
+    email: string,
+    password: string,
+    participantRoles: any[]
+  ) => {
 
-  const findEmail = () => Promise.all([
-    db.entities.usuarioConvite.findOne({
-      where: {
-        codigo,
-        email,
-        expiraEm: { $gte: new Date() }
-      }
-    }),
-    findUserByEmail()
-  ]);
+    const [invite, user] = await Promise.all([
+      UsuarioConvite.findOne({
+        where: <any>{
+          codigo,
+          email,
+          expiraEm: { $gte: new Date() }
+        }
+      }),
+      Usuario.findOne({
+        where: { email }
+      })
+    ]);
 
-  const preCheck = ([invite, user]) => {
     if (!invite) {
       throw new Exceptions.InviteNotFoundException();
     }
+
     if (user) {
       throw new Exceptions.UserAlreadyExistsException();
     }
-    return invite;
-  };
 
-  const inviteBecomesUser = (invite) => {
-    return auth
-      .createUser({
-        password,
-        username: invite.email,
-        email: invite.email,
-        name: invite.nome,
-        roles: invite.roles
-      })
-      .then(id => db.entities.usuario.create({
-        id,
-        nome: invite.nome,
-        email: invite.email,
-        celular: invite.celular,
-        roles: invite.roles
-      }))
-      .then((newUser): any => {
-        if (invite.roles.some(role => participantRoles.includes(role))) {
-          return db.entities.membro.create({
-            usuarioId: newUser.id,
-            participanteId: invite.participante
-          });
-        }
-      })
-      .then(() => invite.destroy());
-  };
+    const newUser = await Usuario.create({
+      id: uuid.v4(),
+      nome: invite.nome,
+      email: invite.email,
+      celular: invite.celular,
+      roles: invite.roles
+    });
 
-  return findEmail()
-    .then(preCheck)
-    .then(inviteBecomesUser)
-    .then(() => true);
-};
+    await auth.createUser({
+      password,
+      username: newUser.id,
+      email: invite.email,
+      name: invite.nome,
+      roles: invite.roles
+    });
+
+    if (invite.roles.some(role => participantRoles.includes(role))) {
+      await Membro.create({
+        usuarioId: newUser.id,
+        participanteId: invite.participante
+      });
+    }
+
+    await invite.destroy();
+
+  };
 
 export default newUserFromInviteUseCase;
