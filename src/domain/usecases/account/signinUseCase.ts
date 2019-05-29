@@ -20,12 +20,25 @@ const signinUseCase = (
     password: string
   ) => {
     try {
-      const usuarios = (await Usuario.findAll({
-        where: <any>[sequelize.or(
-          { email },
-          { documento }
-        )]
-      })).map((u: any) => u.dataValues);
+      let usuarios: Usuario[] = [];
+
+      if (email) {
+        usuarios = await Usuario.findAll({
+          where: sequelize.or(
+            { email }
+          )
+        });
+      }
+
+      if (!usuarios.length && documento) {
+        usuarios = await Usuario.findAll({
+          where: sequelize.or(
+            { documento }
+          )
+        });
+      }
+
+      usuarios = usuarios.map((user: any) => user.dataValues);
 
       if (usuarios.length > 1) {
         throw new Exceptions.MultipleUsersFoundException();
