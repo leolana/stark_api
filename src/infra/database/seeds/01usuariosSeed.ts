@@ -11,12 +11,11 @@ module.exports = {
       updatedAt: now
     };
 
-    const usuarioAlpe = {
+    const usuarioBKO = {
       id: '8a799af7-22f9-417d-9602-c49c80ce5a23',
       nome: 'Alpe',
       email: 'alpe@alpe.com.br',
       celular: '11988887777',
-      roles: [rolesEnum.boAdministrador],
       ...timestamp
     };
 
@@ -25,7 +24,6 @@ module.exports = {
       nome: 'EC',
       email: 'ec@alpe.com.br',
       celular: '11988887777',
-      roles: [rolesEnum.ecAdministrador],
       ...timestamp
     };
 
@@ -34,14 +32,13 @@ module.exports = {
       nome: 'Fornecedor',
       email: 'fornecedor@alpe.com.br',
       celular: '11988887777',
-      roles: [rolesEnum.fcAdministrador],
       ...timestamp
     };
 
     await queryInterface.bulkInsert(
       'usuario',
       [
-        usuarioAlpe,
+        usuarioBKO,
         usuarioEC,
         usuarioFornecedor
       ]
@@ -51,13 +48,21 @@ module.exports = {
       'membro',
       [
         {
+          usuarioId: usuarioBKO.id,
+          participanteId: 0,
+          roles: [rolesEnum.boAdministrador],
+          ...timestamp
+        },
+        {
           usuarioId: usuarioEC.id,
           participanteId: 1,
+          roles: [rolesEnum.ecAdministrador],
           ...timestamp
         },
         {
           usuarioId: usuarioFornecedor.id,
           participanteId: 2,
+          roles: [rolesEnum.fcAdministrador],
           ...timestamp
         }
       ]
